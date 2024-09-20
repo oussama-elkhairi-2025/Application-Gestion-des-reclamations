@@ -72,11 +72,22 @@ int func_pass_check(char pass[]) {
             continue;
         }
     }
-
     if ((len >= 8) && (lower_case == 1) && (upper_case == 1) && (num == 1) && (special_char == 1)) return 1;
     return -1;
 }
 
+
+int func_is_first_node(users *p) {
+
+    int size;
+
+    size = 1;
+    while (p->next != NULL) {
+        size++;
+        p = p->next;
+    }
+    return size;
+}
 
 int main() {
 
@@ -86,6 +97,7 @@ int main() {
     char pass_box[20];
     int pass_valid;    
     int num_of_attempts;
+    int is_first_node;
     users *ptr_head; // the head of the linked list
 
 
@@ -97,6 +109,7 @@ int main() {
     pass_box[0] = '\0';
     num_of_attempts = 3;
     ptr_head = NULL;
+    is_first_node = 0;
 
     // The first menu display
     printf("\tPlease Enter a valid number option from the list bellow:\n");
@@ -114,6 +127,7 @@ int main() {
         A following getchar will read that newline character.There's a few ways around this. One way is to use fgets and sscanf 
         instead of scanf to read in an entire line. Another way is to clear the input buffer after scanf.
     */
+
     getchar();
     printf("\n\n\n");
 
@@ -139,6 +153,8 @@ int main() {
                 if (pass_valid == -1) printf("\t\tThe Password is weak Please try again!\n\n");
             } while (pass_valid == -1);
 
+            // Code segment to define the user role 
+            is_first_node = func_is_first_node(ptr_head);
     }
     return 0;
 } 
