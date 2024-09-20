@@ -19,9 +19,15 @@ int main() {
     printf("\t\t1-> Sign up.\n");
     printf("\t\t2-> Sign in.\n");
     printf("\t\t3-> Exit.\n\n");
-
+    printf("\t\tEnter your option here:   ");
+    
     // Take the input
-    scanf("%d", option);
+    scanf("%d", &option);
+    printf("\n\n\n");
 
+    switch (option) {
+        case (1):
+            
+    }
     return 0;
 }
