@@ -108,6 +108,13 @@ int main() {
 
     // Take the input from the user
     scanf("%d", &option);
+    /*
+        why the getchar after thr scanf?
+        scanf and getchar can be tricky to mix. scanf leaves the newline character in the input after reading an integer. 
+        A following getchar will read that newline character.There's a few ways around this. One way is to use fgets and sscanf 
+        instead of scanf to read in an entire line. Another way is to clear the input buffer after scanf.
+    */
+    getchar();
     printf("\n\n\n");
 
     switch (option) {
