@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
+// #include <windows.h>
 #include <unistd.h>
 #include <string.h>
 
@@ -133,7 +133,7 @@ int func_pass_check_exist(users *p, char pass[]) {
     }
 
     // In case there is one node in the linked list.
-    return strcmp(p->password, pass) == 1? 1: -1;
+    return strcmp(p->password, pass) == 0? 1: -1;
 }
 
 int main() {
@@ -180,8 +180,9 @@ int main() {
 
         getchar();
         printf("\n\n\n");
+        goto sw;
 
-
+sw: 
     switch (option) {
         case (1):
             func_create_node_only(&ptr_head);
@@ -237,24 +238,24 @@ int main() {
                     if (num_of_attempts == 0) {
                         printf("\t\tYou cant log in for %d minute", 1);
                         printf("\n\n\n");
-                        sleep(60000);
+                        sleep(5000);
                         num_of_attempts = 3;
                         goto main_menu;// Create it. goto menu; || continue ****************************************
                     } else {
                         num_of_attempts--;
                     }
-                    printf("\t\tUncorrect log in, Please try again");
+                    printf("\t\tUncorrect log in, Please try again\n\n");
                 }
-            } while ((id_found == -1 && pass_valid == -1));
-            printf("\t\tWelcome back friend");
-            
+            } while ((id_found == -1 || pass_valid == -1));// it is or not and 
+            printf("\n\n\n\t\tWelcome back friend\n\n\n");
+            break;
+        case(3):
+            return 0;
+
+        default:
+            printf("\t\tPlease enter a valid option number\n\n\n");
+            goto main_menu;
     }
     return 0;
 } 
-
-
-
-
-
-
 
