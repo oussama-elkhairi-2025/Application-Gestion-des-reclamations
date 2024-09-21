@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-// #include <windows.h>
+//#include <windows.h>
 #include <unistd.h>
 #include <string.h>
-
 
 
 
@@ -14,8 +13,8 @@ typedef struct users {
     struct users *next;
 } users;
 
-
-void func_create_node_only(users **head) {/* ********************************************** */
+/*
+void func_create_node_only(users **head) {
 
     // alocate memory for the new node.
     users *tmp = (users *)malloc(sizeof(users));
@@ -25,9 +24,14 @@ void func_create_node_only(users **head) {/* ***********************************
     }
     // initializing elements of the node.
     tmp->id = 0;
-    strcpy(tmp->password, "\0");
-    strcpy(tmp->role, "\0");
+    tmp->password[0] = '\0';  // Properly initialize strings
+    tmp->role[0] = '\0'; 
     tmp->next = NULL;
+    
+    // tmp->id = 0;
+    // //strcpy(tmp->password, "");
+    // strcpy(tmp->role, "");
+    // tmp->next = NULL;
 
     if (*head != NULL) {   //if head is NULL, it is an empty list
         // check if there are nodes in the list
@@ -45,6 +49,7 @@ void func_create_node_only(users **head) {/* ***********************************
     return;
 }
 
+*/
 
 int func_id_check(users *p, int id_value_entered) {
     while (p->next != NULL) {
@@ -53,8 +58,6 @@ int func_id_check(users *p, int id_value_entered) {
     }
     return p->id == id_value_entered? 1: -1;
 }
-
-
 
 
 
@@ -104,23 +107,31 @@ int func_is_first_node(users *p) {
 }
 
 
-void func_assign_val_to_nodes(users **p, int idd, char pass[], char rol[]) {
+void func_assign_val_to_nodes(users **p, int idd, char pass[], char rol[]) {// func_create_assign_val_to_nodes
+
+    // Memory allocation for the new node/user.
+    users *ptr = (users *)malloc(sizeof(users));
+    if (!ptr) {
+        printf("Memory allocation for the new node has failed!");
+        return;
+    }
+
+    // node elements initialization with the given data
+    ptr->id = idd;
+    strcpy(ptr->password, pass);
+    strcpy(ptr->role, rol);
+    ptr->next = NULL;
 
     if (*p != NULL) {
-        users *t;
+        users *t;// a pointer to traverse the linked list. in case there are more than one node in the list
         t = *p;
         while (t->next != NULL) {
             t = t->next;
         }
-        t->id = idd;
-        strcpy(t->password, pass);
-        strcpy(t->role, rol);
-    } else {
-        *p = (users *)malloc(sizeof(users));
-        (*p)->id = idd;
-        strcpy((*p)->password, pass);
-        strcpy((*p)->role, rol);
-        (*p)->next = NULL;
+        t->next = ptr;
+
+    } else {// In case there is no node in the list 
+        *p = ptr;
     }
 }
 
@@ -128,12 +139,28 @@ void func_assign_val_to_nodes(users **p, int idd, char pass[], char rol[]) {
 int func_pass_check_exist(users *p, char pass[]) {
 
     while (p->next != NULL) {
-        if (1 == strcmp(p->password, pass)) return 1;
+        if (0 == strcmp(p->password, pass)) return 1; // strcmp retuns 0 on match
         p = p->next;
     }
 
     // In case there is one node in the linked list.
     return strcmp(p->password, pass) == 0? 1: -1;
+}
+
+
+void func_display_users(users *head) {
+
+    //if (head != NULL) { //the linked list in not empty
+        users *p = head;
+        while (p != NULL) {// why not p->next != NULL
+            printf("\n\n%d\n\n", p->id);
+            printf("\n\n%s\n\n", p->password);
+            printf("\n\n%s\n\n", p->role);
+            p = p->next;
+        }
+//} else {
+
+  //  }
 }
 
 int main() {
@@ -160,8 +187,16 @@ int main() {
     ptr_head = NULL;
     is_first_node = 0;
 
+
+
+
+    // creating our first user the admin
+    func_assign_val_to_nodes(&ptr_head, 0, "admin", "admin");
+    if (!ptr_head) return -1;
+
     main_menu:
         // The first menu display
+        printf("\t\tThis is FIRST MENU BABY \n\n\n");
         printf("\tPlease Enter a valid number option from the list bellow:\n");
         printf("\t\t1-> Sign up.\n");
         printf("\t\t2-> Sign in.\n");
@@ -184,8 +219,12 @@ int main() {
 sw: 
     switch (option) {
         case (1):
-            func_create_node_only(&ptr_head);
-            if (!ptr_head) return -1;
+            // we create the first node for the admin
+            //func_create_node_only(&ptr_head);
+
+            //func_assign_val_to_nodes(&ptr_head, 0, "admin", "admin");
+
+
             do {
                 printf("\t\tPlease enter a number id: ");
                 scanf("%d", &id_box);
@@ -198,21 +237,28 @@ sw:
             // capturing the password.
             do {
                 printf("\t\tPlease enter a valid password:  ");
-                scanf("%[^\n]s", pass_box);
+                scanf("%[^\n]", pass_box);//s specifier removed
                 getchar();
                 printf("\n\n\n");
                 pass_valid = func_pass_check(pass_box);
                 if (pass_valid == -1) printf("\t\tThe Password is weak Please try again!\n\n");
             } while (pass_valid == -1);
 
-            // Code segment to define the user role 
-            is_first_node = func_is_first_node(ptr_head); // or ptr_head == NULL
-            if (is_first_node == 1) {// we are at the first node so we are  going to be the admin
-                strcpy(role_box, "admin");
-            } else {
-                strcpy(role_box, "client");
-            }
-            func_assign_val_to_nodes(&ptr_head, id_box, pass_box, role_box);
+            // Code segment to define the user role.
+            //is_first_node = func_is_first_node(ptr_head); // or ptr_head == NULL
+            // if (is_first_node == 1) {// we are at the first node so we are  going to be the admin
+            //     strcpy(role_box, "admin");
+            // } else {
+            //     strcpy(role_box, "client");
+            // }
+            
+            // we create another node for other users
+            // func_create_node_only(&ptr_head);
+            // if (!ptr_head) return -1;
+            // func_assign_val_to_nodes(&ptr_head, id_box, pass_box, "client");
+            
+            func_assign_val_to_nodes(&ptr_head, id_box, pass_box, "client");
+            if (!ptr_head) return -1;
         
             printf("\t\tYour account has been succefully created");
             printf("\n\n\n");
@@ -228,7 +274,7 @@ sw:
                 id_found = func_id_check(ptr_head, id_box);
 
                 printf("\t\tPlease enter a valid password:  ");
-                scanf("%[^\n]s", pass_box);
+                scanf("%[^\n]", pass_box);
                 getchar();
                 printf("\n\n\n");
                 pass_valid = func_pass_check_exist(ptr_head, pass_box);
@@ -237,7 +283,7 @@ sw:
                     if (num_of_attempts == 0) {
                         printf("\t\tYou cant log in for %d minute", 1);
                         printf("\n\n\n");
-                        sleep(5000);
+                        sleep(3);// becarefull where you run the prgram
                         num_of_attempts = 3;
                         goto main_menu;// Create it. goto menu; || continue ****************************************
                     } else {
@@ -245,10 +291,13 @@ sw:
                     }
                     printf("\t\tUncorrect log in, Please try again\n\n");
                 }
-            } while ((id_found == -1 || pass_valid == -1));// it is or not and 
+            } while ((id_found == -1 || pass_valid == -1));// it is or not and operator.
+
             printf("\n\n\n\t\tWelcome back friend\n\n\n");
             break;
         case(3):
+            // just for the test
+            func_display_users(ptr_head);
             return 0;
 
         default:
