@@ -162,7 +162,6 @@ int main() {
 
     main_menu:
         // The first menu display
-        printf("\t\tThis is FIRST MENU BABY \n\n\n");
         printf("\tPlease Enter a valid number option from the list bellow:\n");
         printf("\t\t1-> Sign up.\n");
         printf("\t\t2-> Sign in.\n");
