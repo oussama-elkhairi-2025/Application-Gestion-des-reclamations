@@ -3,7 +3,7 @@
 //#include <windows.h>
 #include <unistd.h>
 #include <string.h>
-
+#include <time.h>
 
 
 typedef struct users {
@@ -12,6 +12,20 @@ typedef struct users {
     char role[15];
     struct users *next;
 } users;
+
+
+typedef struct complains {
+    int id;
+    char motive[100];
+    char description[500];
+    char category[15];
+    char status[10];
+    char date[30];
+    char note[100];
+    char usrname[20];
+    struct complains *next;
+} complains;
+
 
 /*
 void func_create_node_only(users **head) {
@@ -163,6 +177,180 @@ void func_display_users(users *head) {
   //  }
 }
 
+int func_role_checker(users *pt, int id_box) {
+    
+    while (pt != NULL) {
+        if (pt->id == id_box) {
+            if (strcmp(pt->role, "admin") == 0) return 0;
+            else if (strcmp(pt->role, "agent") == 0) return 1;
+            else return 2; //normal user == client.
+        }
+        pt = pt->next;
+    }
+    return -1;//to avoid errors we must retun an int any way
+}
+
+void func_manag_users_roles(users *p_head) {
+
+    //Print users list
+    users *traverse_ptr = p_head;
+    int i = 0;
+    int search_id = 0;
+    int exist = 1;
+    while (traverse_ptr != NULL) {
+        printf("\tId  %d: %d\n\n", ++i, traverse_ptr->id);
+        traverse_ptr = traverse_ptr->next;
+    }
+
+    traverse_ptr = p_head;// to gert back to the first node
+    printf("\t\tPlease enter a user id to switch the role to agent: \n");
+    scanf("%d", &search_id);
+    if (search_id != 0) {
+        while (traverse_ptr != NULL) {
+            if (traverse_ptr->id == search_id) {
+                strcpy(traverse_ptr->role, "agent");
+                printf("The user with id %d is now %s\n\n", traverse_ptr->id, traverse_ptr->role);
+                exist = 1;
+                break;
+            }
+            traverse_ptr = traverse_ptr->next;
+        }
+    }
+    if (search_id != 0 && exist == 0) {
+        printf("\tId not Found.\n");
+    }
+
+}
+
+
+void func_add_complains(complains **p) {
+
+    char usrname[20];
+    char des[500];
+    char categor[15];
+    char moti[100];
+    time_t now;
+
+    // Memory allocation for the new node/complain.
+    complains *ptr = (complains *)malloc(sizeof(complains));
+    if (!ptr) {
+        printf("Memory allocation for the new node has failed!");// Handle in the callign func
+        return;
+    }
+
+    // <<<<<<<<<<<<<<<<<node elements initialization by default>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+     // Seed the random number generator with the current time
+    srand(time(0));
+
+    // Generate a random ID between 1000 and 99999 (5-digit ID)
+    int complaintID = rand() % 90000 + 10000;
+
+ 
+    ptr->id = complaintID;//*************************************************************** */
+    
+    strcpy(ptr->status, "Waiting");
+    strcpy(ptr->note, "no note for the moment");
+
+    struct tm *local;
+    time(&now); // Get the current time
+    local = localtime(&now); // Convert to local time
+    strftime(ptr->date, sizeof(ptr->date), "%d-%m-%Y %H:%M:%S", local);
+
+    ptr->next = NULL;
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<, ask thye user to enter data
+
+
+    if (*p != NULL) {
+        complains *t; // a pointer to traverse the linked list. in case there are more than one node in the list
+        t = *p;
+        while (t->next != NULL) {
+            t = t->next;
+        }
+        t->next = ptr;
+
+    } else {// In case there is no node in the list 
+        *p = ptr;
+    }
+}
+
+
+void func_display_complains(complains *ptr_hd) {
+
+    complains *p;
+
+    p = ptr_hd;
+    printf("\t\tAll complains are list bellow\n");
+    while (p != NULL) {
+        printf("\n\t\t\t%d\n", p->id);
+        printf("\t\t\t%s\n", p->status);
+        printf("\t\t\t%s\n", p->date);
+        printf("\t\t\t%s\n", p->note);
+        p = p->next;
+    }
+}
+
+void func_admin_menu(users **ptr_head, complains **ptr_head_complains) {
+
+
+    int opt;
+
+    opt = 0;
+    while (1) {
+    printf("\t\tWelcome back admin!\n\n\n");
+    printf("\tPlease Enter a valid number option from the list bellow:\n");
+    printf("\t\t1-> Manage users roles.\n");
+    printf("\t\t2-> add complains.\n");
+    printf("\t\t3-> Display complains list.\n");
+    printf("\t\t4-> Modify a complain.\n");
+    printf("\t\t5-> Delete a complain.\n");
+    printf("\t\t6-> Search for a complain.\n");
+    printf("\t\t7-> Display complains by priority.\n");
+    printf("\t\t8-> Okey bye\n");
+    printf("\t\t9-> Display complains list.\n");
+    printf("\t\t10-> Display complains list.\n");
+    printf("\t\t11-> Display complains list.\n");
+    printf("\t\t12-> Log out\n\n");
+    printf("\t\tEnter your option here:     ");
+    scanf("%d", &opt);
+
+    if (opt == 12) return;
+
+    switch (opt) {
+        case (1):
+            func_manag_users_roles(*ptr_head);
+            break;
+        case (2):
+            func_add_complains(ptr_head_complains);
+            break;
+       case (3):
+            func_display_complains(*ptr_head_complains);
+            break;
+     /*
+        case (1):
+            break;
+        case (1):
+            break;
+        case (1):
+            break;
+        case (1):
+            break;
+        case (1):
+            break;
+        case (1):
+            break;
+        case (1):
+            break;
+        case (1):
+            break;
+        case (1):
+            break;*/
+        default:
+            printf("\t\tPlease enter a valid option number.\n\n");        
+    }
+}
+}
+
 int main() {
 
     int option;
@@ -173,7 +361,9 @@ int main() {
     int pass_valid;    
     int num_of_attempts;
     int is_first_node;
+    int var_role;
     users *ptr_head; // the head of the linked list
+    complains *ptr_head_complains;
 
 
     // initializing variables
@@ -184,8 +374,10 @@ int main() {
     pass_box[0] = '\0';
     role_box[0] = '\0';
     num_of_attempts = 3;
-    ptr_head = NULL;
+    ptr_head = NULL;// y we have to set it to NULL??--------------------------------------------
+    ptr_head_complains = NULL;
     is_first_node = 0;
+    var_role = 0;
 
 
 
@@ -274,7 +466,7 @@ sw:
                 id_found = func_id_check(ptr_head, id_box);
 
                 printf("\t\tPlease enter a valid password:  ");
-                scanf("%[^\n]", pass_box);
+                scanf(" %[^\n]", pass_box);
                 getchar();
                 printf("\n\n\n");
                 pass_valid = func_pass_check_exist(ptr_head, pass_box);
@@ -293,7 +485,13 @@ sw:
                 }
             } while ((id_found == -1 || pass_valid == -1));// it is or not and operator.
 
-            printf("\n\n\n\t\tWelcome back friend\n\n\n");
+            printf("\n\n\n\t\tWelcome back friend\n\n\n"); //+++++++++++++++++++++++++++++++++++++++++++++++++
+            var_role = func_role_checker(ptr_head, id_box);
+            switch(var_role) {
+                case(0)://admin
+                    func_admin_menu(&ptr_head, &ptr_head_complains);
+                    goto main_menu;
+            }
             break;
         case(3):
             // just for the test
@@ -305,5 +503,4 @@ sw:
             goto main_menu;
     }
     return 0;
-} 
-
+}
