@@ -5,7 +5,6 @@
 #include <string.h>
 #include <time.h>
 
-
 typedef struct users {
     int id;
     char password[15];
@@ -24,6 +23,8 @@ typedef struct complains {
     char date[30];
     char note[100];
     int id_usr;
+    time_t creation_time; // you know where to use it 
+    double  delai_time; // you know where to use it 
     struct complains *next;
 } complains;
 
@@ -63,7 +64,6 @@ void func_create_node_only(users **head) {
     }
     return;
 }
-
 */
 
 int func_id_check(users *p, int id_value_entered) {
@@ -263,8 +263,13 @@ void func_add_complains(complains **p, int id_box) {
     struct tm *local;
     time(&now); // Get the current time
     local = localtime(&now); // Convert to local time
+
+    ptr->creation_time = time(NULL);
+
+    printf("\n\n\n\n\n\n ---------------->  \n\n", ptr->creation_time);
+
     strftime(ptr->date, sizeof(ptr->date), "%d-%m-%Y %H:%M:%S", local);
-   
+
     printf("\n\n4- DATE: Please:     %s\n", ptr->date); 
 
     printf("\n\nPlease enter the complain motive:   ");
@@ -411,6 +416,10 @@ void func_modify_complains(complains *pt) {
             scanf("%[^\n]", pt->category);
             getchar();
             printf("\n");
+   /*         printf("\n\t\tPlease Enter a  status: ");
+            scanf("%[^\n]", pt->status);
+            getchar();
+            printf("\n");*/
             found = 1;
             break;
         }
@@ -601,6 +610,7 @@ void func_handle_complains(complains* p) {
 
     int i;
     int opt;
+    time_t now;
 
     printf("\n\t\tPlease Enter a complain id: ");
     scanf("%d", &i);
@@ -622,11 +632,19 @@ void func_handle_complains(complains* p) {
                     printf("Status has been updated succefully");
                     printf("\n\n");
                     strcpy(p->status, "resolved");
+
+                    now = time(NULL);
+                    p->delai_time = difftime(now, p->creation_time);
+
                     return;
                 case(3):
                     printf("Status has been updated succefully");
                     printf("\n\n");
                     strcpy(p->status, "rejected");
+                
+                    now = time(NULL);
+                    p->delai_time = difftime(now, p->creation_time);
+
                     return;
                 default:
                     printf("\n\t\tPlease enter a valid option");
@@ -661,6 +679,18 @@ void    func_display_number_of_complains(complains *p) {
 
 }
 
+
+double  func_average_delai_time(complains *head) {
+
+    double sum_all_delais;
+    int sum_all_handeled_comp;
+    double a
+    // sum of all delais in double
+    // sum of all handeled complains
+    // 
+
+}
+
 void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_box) {
     int opt;
 
@@ -677,9 +707,10 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
     printf("\t\t7->  Display complains by priority.\n");
     printf("\t\t8->  Process a complain\n");
     printf("\t\t9->  Display the number of complains.\n");
-    printf("\t\t10-> Average delai time.\n");
-    printf("\t\t11-> Raport\n\n");
-    printf("\t\t12-> Log out\n\n");
+    printf("\t\t10-> The Average delai time.\n");
+    printf("\t\t11-> The rate of resolved complains.\n");
+    printf("\t\t12-> Raport\n\n");
+    printf("\t\t13-> Log out\n\n");
     printf("\t\tEnter your option here:     ");
     scanf("%d", &opt);
 
@@ -713,9 +744,11 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
         case (9):
             func_display_number_of_complains(*ptr_head_complains);
             break;
-       /* case (10):
+      case (10):
+            func_average_delai_time(*ptr_head_complains);
             break;
-        case (11):
+
+    /*      case (11):
             break;
         case (12):
             break;
