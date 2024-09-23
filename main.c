@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 //#include <windows.h>
@@ -679,17 +680,60 @@ void    func_display_number_of_complains(complains *p) {
 
 }
 
+double func_add_all_delai_time(complains *h) {
+    double sum = 0;
 
-double  func_average_delai_time(complains *head) {
+    while (h) {
 
-    double sum_all_delais;
-    int sum_all_handeled_comp;
-    double a
-    // sum of all delais in double
-    // sum of all handeled complains
-    // 
-
+        if (strcmp(h->status, "waiting") != 0) {
+            sum += h->delai_time;
+        }
+        h = h->next;
+    }
+    return sum;
 }
+
+int func_sum_all_handeled_comp(complains *h) {
+
+    int sum = 0;
+
+    while (h) {
+        if (strcmp(h->status, "waiting") != 0) {
+            sum++;
+        }
+        h = h->next;
+    }
+    return sum;
+}
+
+void  func_average_delai_time(complains *head) {
+
+    double sum_all_delais = func_add_all_delai_time(head);
+    int sum_all_handeled_comp = func_sum_all_handeled_comp(head);
+    double avr_del_time = (sum_all_handeled_comp/sum_all_delais);
+
+    printf("\n\n\t\tThe average delai Time in seconds is:  %LF\n", avr_del_time);
+}
+int func_sum_all_comp(complains *h) {
+
+    int size = 0;
+
+    while (h) {
+        size++;
+        h = h->next;
+    }
+
+    return size;
+}
+
+void    func_rate_of_resolved_complains(complains *h) {
+
+    int sum_all_handeled_comp = func_sum_all_handeled_comp(h);
+    int sum_all_comp = func_sum_all_comp(h);
+    float rate = ((sum_all_handeled_comp / sum_all_comp) * 0.1);
+    printf("\n\n\t\tThe resolved complains rate is:  %f\n", rate);
+}
+
 
 void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_box) {
     int opt;
@@ -748,7 +792,8 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
             func_average_delai_time(*ptr_head_complains);
             break;
 
-    /*      case (11):
+      case (11):
+            func_rate_of_resolved_complains(*ptr_head_complains);
             break;
         case (12):
             break;
