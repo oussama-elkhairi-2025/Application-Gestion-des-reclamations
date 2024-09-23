@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 //#include <windows.h>
@@ -698,7 +697,7 @@ int func_sum_all_handeled_comp(complains *h) {
     int sum = 0;
 
     while (h) {
-        if (strcmp(h->status, "waiting") != 0) {
+        if (strcmp(h->status, "resolved") == 0) {
             sum++;
         }
         h = h->next;
@@ -709,11 +708,14 @@ int func_sum_all_handeled_comp(complains *h) {
 void  func_average_delai_time(complains *head) {
 
     double sum_all_delais = func_add_all_delai_time(head);
+    printf("        %lf     \n", sum_all_delais);
     int sum_all_handeled_comp = func_sum_all_handeled_comp(head);
+    printf("        %d     \n", sum_all_handeled_comp);
     double avr_del_time = (sum_all_handeled_comp/sum_all_delais);
-
-    printf("\n\n\t\tThe average delai Time in seconds is:  %LF\n", avr_del_time);
+    printf("        %lf    \n", avr_del_time);
+    printf("\n\n\t\tThe average delai Time in seconds is:  %lf \n", avr_del_time);
 }
+
 int func_sum_all_comp(complains *h) {
 
     int size = 0;
@@ -726,11 +728,16 @@ int func_sum_all_comp(complains *h) {
     return size;
 }
 
+
 void    func_rate_of_resolved_complains(complains *h) {
 
     int sum_all_handeled_comp = func_sum_all_handeled_comp(h);
+       printf("        %d     \n", sum_all_handeled_comp);
+
     int sum_all_comp = func_sum_all_comp(h);
-    float rate = ((sum_all_handeled_comp / sum_all_comp) * 0.1);
+        printf("        %d     \n", sum_all_comp);
+
+    float rate = ((sum_all_handeled_comp / sum_all_comp) * 0.01);
     printf("\n\n\t\tThe resolved complains rate is:  %f\n", rate);
 }
 
