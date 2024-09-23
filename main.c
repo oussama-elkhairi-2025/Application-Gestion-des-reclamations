@@ -525,7 +525,7 @@ void func_sort_complains(complains *ptr_hd) {
             p->priority = 0;// High priority.
         } else if (strstr(p->description, "important") != NULL) {
             p->priority = 1;// Meduim priority.
-        }else if (strstr(p->description, "normal") != NULL) {
+        }else /*if (strstr(p->description, "normal") != NULL)*/ {
             p->priority = 2;// low priority.
         }
         p = p->next;
@@ -559,7 +559,6 @@ void func_display_complains_by_priority(complains* ptr_complains) {
         }
         p1 = p1->next;
     }
-
 
     printf("\n\tThe complains with a medium priority: \n");
     while (p2 != NULL) {
