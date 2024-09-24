@@ -200,30 +200,32 @@ void func_manag_users_roles(users *p_head) {
     users *traverse_ptr = p_head;
     int i = 0;
     int search_id = 0;
-    int exist = 1;
+    int exist = 0;//this responsible for printing id is not found
     while (traverse_ptr != NULL) {
-        printf("\tUser  %d: %d\n\n", ++i, traverse_ptr->id);
+        printf("\n\t\tUser  %d: %d\n\n", ++i, traverse_ptr->id);
         traverse_ptr = traverse_ptr->next;
     }
 
     traverse_ptr = p_head;// to gert back to the first node
-    printf("\t\tPlease enter a user id to switch the role to agent: \n");
+    printf("\n\n\n\t\tPlease enter a user id to switch the role to agent: ");
     scanf("%d", &search_id);
     getchar();
+    printf("\n");
 
     if (search_id != 0) {
         while (traverse_ptr != NULL) {
             if (traverse_ptr->id == search_id) {
                 strcpy(traverse_ptr->role, "agent");
-                printf("The user with id %d is now %s\n\n", traverse_ptr->id, traverse_ptr->role);
+                printf("\t\tThe user with id %d is now %s\n\n", traverse_ptr->id, traverse_ptr->role);
                 exist = 1;
                 break;
             }
             traverse_ptr = traverse_ptr->next;
         }
     }
+
     if (search_id != 0 && exist == 0) {
-        printf("\tId not Found.\n");
+        printf("\t\tId is not Found.\n\n\n\n");
     }
 }
 
@@ -338,7 +340,7 @@ void func_display_complains(complains *ptr) {// I have to make the output more c
     //complains *p;
 
 
-    printf("\t\tAll complains are list bellow\n\n");
+    printf("\n\n\n\n\t\tAll complains are list bellow\n\n");
     while (ptr != NULL) {
         printf("\t\t\tDate          ->   %s\n", ptr->date);
         printf("\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
@@ -363,6 +365,7 @@ void func_display_complains(complains *ptr) {// I have to make the output more c
         printf("\n\n\n");
         ptr = ptr->next;
     }
+    printf("\n\n");
 }
 
 
@@ -429,7 +432,7 @@ void func_modify_complains(complains *pt) {
         pt = pt->next;
     }
     if (!found) {
-        printf("\n\t\tComplain is not found");
+        printf("\n\n\n\t\tComplain is not found\n\n\n\n");
     }
     // check if it exixt
         // if exists 
@@ -446,7 +449,6 @@ void func_modify_complains(complains *pt) {
 
 
 void func_delete_complains(complains **head) {
-    
 
     // How to delete
     complains* current = *head;
@@ -469,7 +471,7 @@ void func_delete_complains(complains **head) {
         tmp = tmp->next;
     }
     if (f == 0) {
-         printf("\n\tThere are no complains with that id!\n");
+         printf("\n\t\tThere are no complains with that id!\n\n\n\n");
          return;
     }
 
@@ -508,15 +510,15 @@ void    func_search_complains_by_user_id(complains *p1) {
     while (p1) {
         if (p1->id_usr == id) {
             found = 1;
-            printf("The complain with the user id  %d is found\n", id);
-            printf("\n\tComplain Id -> %d\n", p1->id);
-            printf("\n\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\tPriority -> High\n");
-            printf("\n\tDescription -> %s\n", p1->description);
-            printf("\n\tCategory -> %s\n", p1->category);
-            printf("\n\tStatus -> %s\n", p1->status);
-            printf("\n\tDate -> %s\n", p1->date);
-            printf("\n\tNote -> %s\n", p1->note);
+            printf("\nThe complain with the user id  %d is found\n", id);
+            printf("\n\t\tComplain Id -> %d\n", p1->id);
+            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
+            printf("\n\t\tPriority -> High\n");
+            printf("\n\t\tDescription -> %s\n", p1->description);
+            printf("\n\t\tCategory -> %s\n", p1->category);
+            printf("\n\t\tStatus -> %s\n", p1->status);
+            printf("\n\t\tDate -> %s\n", p1->date);
+            printf("\n\t\tNote -> %s\n", p1->note);
             printf("\n\n\n");
             }
         
@@ -524,7 +526,7 @@ void    func_search_complains_by_user_id(complains *p1) {
 
     }  
     if (found == 0) {
-        printf("\n\nThe complain is not found, please try again.");
+        printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
     }
 }
 
@@ -539,21 +541,21 @@ void    func_search_complains_by_complain_id(complains *p1) {
     while (p1) {
         if (p1->id == id) {
             found = 1;
-            printf("The complain with the id  %d is found\n", id);
-            printf("\n\tComplain Id -> %d\n", p1->id);
-            printf("\n\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\tPriority -> High\n");
-            printf("\n\tDescription -> %s\n", p1->description);
-            printf("\n\tCategory -> %s\n", p1->category);
-            printf("\n\tStatus -> %s\n", p1->status);
-            printf("\n\tDate -> %s\n", p1->date);
-            printf("\n\tNote -> %s\n", p1->note);
-            printf("\n\n");  
+            printf("\tThe complain with the id  %d is found\n", id);
+            printf("\n\t\tComplain Id -> %d\n", p1->id);
+            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
+            printf("\n\t\tPriority -> High\n");
+            printf("\n\t\tDescription -> %s\n", p1->description);
+            printf("\n\t\tCategory -> %s\n", p1->category);
+            printf("\n\t\tStatus -> %s\n", p1->status);
+            printf("\n\t\tDate -> %s\n", p1->date);
+            printf("\n\t\tNote -> %s\n", p1->note);
+            printf("\n\n\n\n");  
             return;
             }
         p1 = p1->next;
     }
-    if (found == 0) printf("\n\nThe complain is not found, please try again.\n\n");
+    if (found == 0) printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
         // print enter compla id 
 
         // check if it exixt
@@ -596,54 +598,60 @@ void func_display_complains_by_priority(complains* ptr_complains) {
     p3 = ptr_complains;
 
 
-    printf("\n\tThe complains with the highest priority: \n");
+    printf("\n\n\n\tThe complains with the highest priority: \n\n");
     while (p1 != NULL) {
         if (p1->priority == 0) {
-            printf("\n\tComplain Id -> %d\n", p1->id);
-            printf("\n\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\tPriority -> High\n");
-            printf("\n\tDescription -> %s\n", p1->description);
-            printf("\n\tCategory -> %s\n", p1->category);
-            printf("\n\tStatus -> %s\n", p1->status);
-            printf("\n\tDate -> %s\n", p1->date);
-            printf("\n\tNote -> %s\n", p1->note);
+            printf("\n\t\tComplain Id     -> %d\n", p1->id);
+            printf("\n\t\tUser Id         -> %d\n", p1->id_usr);
+            printf("\n\t\tPriority        -> High\n");
+            printf("\n\t\tDescription     -> %s\n", p1->description);
+            printf("\n\t\tCategory        -> %s\n", p1->category);
+            printf("\n\t\tStatus          -> %s\n", p1->status);
+            printf("\n\t\tDate            -> %s\n", p1->date);
+            printf("\n\t\tNote            -> %s\n", p1->note);
             printf("\n\n\n\n");
         }
         p1 = p1->next;
     }
 
-    printf("\n\tThe complains with a medium priority: \n");
+    printf("\n\n\n\tThe complains with a medium priority: \n\n");
     while (p2 != NULL) {
         if (p2->priority == 1) {
-            printf("\n\tComplain Id -> %d\n", p2->id);
-            printf("\n\tUser Id -> %d\n", p2->id_usr);
-            printf("\n\tPriority -> Medium\n");
-            printf("\n\tDescription -> %s\n", p2->description);
-            printf("\n\tCategory -> %s\n", p2->category);
-            printf("\n\tStatus -> %s\n", p2->status);
-            printf("\n\tDate -> %s\n", p2->date);
-            printf("\n\tNote -> %s\n", p2->note);
+            printf("\n\t\tComplain Id     -> %d\n", p2->id);
+            printf("\n\t\tUser Id         -> %d\n", p2->id_usr);
+            printf("\n\t\tPriority        -> Medium\n");
+            printf("\n\t\tDescription     -> %s\n", p2->description);
+            printf("\n\t\tCategory        -> %s\n", p2->category);
+            printf("\n\t\tStatus          -> %s\n", p2->status);
+            printf("\n\t\tDate            -> %s\n", p2->date);
+            printf("\n\t\tNote            -> %s\n", p2->note);
             printf("\n\n\n\n");
         }
         p2 = p2->next;
     }
 
 
-    printf("\n\tThe complains with a low priority: \n");
+    printf("\n\n\n\tThe complains with a low priority: \n\n");
     while (p3 != NULL) {
         if (p3->priority == 2) {
-            printf("\n\tComplain Id -> %d\n", p3->id);
-            printf("\n\tUser Id -> %d\n", p3->id_usr);
-            printf("\n\tPriority -> Low\n");
-            printf("\n\tDescription -> %s\n", p3->description);
-            printf("\n\tCategory -> %s\n", p3->category);
-            printf("\n\tStatus -> %s\n", p3->status);
-            printf("\n\tDate -> %s\n", p3->date);
-            printf("\n\tNote -> %s\n", p3->note);
+            printf("\n\t\tComplain Id -> %d\n", p3->id);
+            printf("\n\t\tUser Id -> %d\n", p3->id_usr);
+            printf("\n\t\tPriority -> Low\n");
+            printf("\n\t\tDescription -> %s\n", p3->description);
+            printf("\n\t\tCategory -> %s\n", p3->category);
+            printf("\n\t\tStatus -> %s\n", p3->status);
+            printf("\n\t\tDate -> %s\n", p3->date);
+            printf("\n\t\tNote -> %s\n", p3->note);
             printf("\n\n\n\n");
         }
         p3 = p3->next;
+        if (p3 == NULL) {//dont print the following code
+            return;
+        }
     }
+
+    printf("\n\n\n\n");
+
 }
 
 
@@ -655,14 +663,14 @@ void func_handle_complains(complains* p) {
     int opt;
     time_t now;
 
-    printf("\n\t\tPlease Enter a complain id: ");
+    printf("\n\n\t\tPlease Enter a complain id: ");
     scanf("%d", &i);
     getchar();
 
     while (p) {
         if (p->id == i) {
         
-            printf("Please chose the status: \n\t1- waiting\n\t2- resolved\n\t3- rejected\n\t\t");
+            printf("\tPlease chose the status: \n\t1- waiting\n\t2- resolved\n\t3- rejected\n\n");
 
             scanf("%d", &opt);
             getchar();
@@ -671,12 +679,12 @@ void func_handle_complains(complains* p) {
                 case(1):
                     strcpy(p->status, "waiting");
 
-                    printf("Please enter a note: ");
+                    printf("\t\tPlease enter a note: ");
                     scanf("%[^\n]s", p->note);
                     getchar();
                     printf("\n\n");
 
-                    printf("Status has been updated succefully");
+                    printf("\t\tStatus has been updated succefully");
                     printf("\n\n");
     
                     return;
@@ -684,13 +692,13 @@ void func_handle_complains(complains* p) {
 
                     strcpy(p->status, "resolved");
         
-                    printf("Please enter a note: ");
+                    printf("\t\tPlease enter a note: ");
                     scanf("%[^\n]s", p->note);
                     getchar();
                     printf("\n\n");
 
 
-                    printf("Status has been updated succefully");
+                    printf("\t\tStatus has been updated succefully");
                     printf("\n\n");
         
                     now = time(NULL);
@@ -701,13 +709,13 @@ void func_handle_complains(complains* p) {
 
                     strcpy(p->status, "rejected");
 
-                    printf("Please enter a note: ");
+                    printf("\t\tPlease enter a note: ");
                     scanf("%[^\n]s", p->note);
                     getchar();
                     printf("\n\n");
 
 
-                    printf("Status has been updated succefully");
+                    printf("\t\tStatus has been updated succefully");
                     printf("\n\n");
                 
                     now = time(NULL);
@@ -716,14 +724,14 @@ void func_handle_complains(complains* p) {
                     return;
                 default:
                     printf("\n\t\tPlease enter a valid option");
-                    printf("\n\n");
+                    printf("\n\n\n\n");
                     return;
 
             }
         }
         p = p->next;
     }
-    printf("\n\t\tComplain id is not found, Please try again");
+    printf("\n\t\tComplain id is not found, Please try again\n\n\n\n");
 }
 
 
@@ -740,11 +748,11 @@ void    func_display_number_of_complains(complains *p) {
         tmp = tmp->next;
     }
     if (size == 0) {
-        printf("\n\t\tThere are no complains yet\n");
+        printf("\n\n\t\tThere are no complains yet\n\n\n\n");
         return;
     }
 
-    printf("\n\t\tThe number of complains is:   %d\n", size);
+    printf("\n\n\t\tThe number of complains is:   %d\n\n\n\n", size);
 
 }
 
@@ -778,12 +786,12 @@ int func_sum_all_handeled_comp(complains *h) {
 void  func_average_delai_time(complains *head) {
 
     double sum_all_delais = func_add_all_delai_time(head);
-    printf("        %lf     \n", sum_all_delais);
+    printf("\n\t\t        %lf     \n", sum_all_delais);
     double sum_all_handeled_comp = func_sum_all_handeled_comp(head);
-    printf("        %d     \n", sum_all_handeled_comp);
+    printf("\n\t\t        %d     \n", sum_all_handeled_comp);
     double avr_del_time = (sum_all_delais/sum_all_handeled_comp);
-    printf("        %lf    \n", avr_del_time);
-    printf("\n\n\t\tThe average delai Time in seconds is:  %lf \n", avr_del_time);
+    printf("\n\t\t        %lf    \n", avr_del_time);
+    printf("\n\n\t\tThe average delai Time in seconds is:  %lf \n\n\n\n", avr_del_time);
 }
 
 int func_sum_all_comp(complains *h) {
@@ -802,13 +810,13 @@ int func_sum_all_comp(complains *h) {
 void    func_rate_of_resolved_complains(complains *h) {
 
     int sum_all_handeled_comp = func_sum_all_handeled_comp(h);
-       printf("        %d     \n", sum_all_handeled_comp);
+       printf("\n\n\t\t        %d     \n", sum_all_handeled_comp);
 
     int sum_all_comp = func_sum_all_comp(h);
-        printf("        %d     \n", sum_all_comp);
+        printf("\n\n\t\t        %d     \n", sum_all_comp);
 
     float rate = ((sum_all_handeled_comp / sum_all_comp) * 0.01);
-    printf("\n\n\t\tThe resolved complains rate is:  %f\n", rate);
+    printf("\n\n\t\tThe resolved complains rate is:  %f\n\n\n\n", rate);
 }
 
 
@@ -823,22 +831,22 @@ void    func_search_complains_by_date(complains *p1) {
     while (p1) {
         if ( strcmp(p1->date, id) == 0) {
             f = 1;
-            printf("The complain with the date  %s is found\n", id);
-            printf("\n\tComplain Id -> %d\n", p1->id);
-            printf("\n\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\tPriority -> High\n");
-            printf("\n\tDescription -> %s\n", p1->description);
-            printf("\n\tCategory -> %s\n", p1->category);
-            printf("\n\tStatus -> %s\n", p1->status);
-            printf("\n\tDate -> %s\n", p1->date);
-            printf("\n\tNote -> %s\n", p1->note);
-            printf("\n\n");  
+            printf("\n\tThe complain with the date  %s is found\n", id);
+            printf("\n\t\tComplain Id -> %d\n", p1->id);
+            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
+            printf("\n\t\tPriority -> High\n");
+            printf("\n\t\tDescription -> %s\n", p1->description);
+            printf("\n\t\tCategory -> %s\n", p1->category);
+            printf("\n\t\tStatus -> %s\n", p1->status);
+            printf("\n\t\tDate -> %s\n", p1->date);
+            printf("\n\t\tNote -> %s\n", p1->note);
+            printf("\n\n\n\n");  
             return;
             }
         p1 = p1->next;
     }
 
-    if (f == 0) printf("\n\nThe complain is not found, please try again.");
+    if (f == 0) printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
 }
 
 void    func_search_complains_by_status(complains *p1) {
@@ -852,50 +860,50 @@ void    func_search_complains_by_status(complains *p1) {
     while (p1) {
         if ( strcmp(p1->status, id) == 0) {
             found = 1;
-            printf("The complain with the status  %s is found\n", id);
-            printf("\n\tComplain Id -> %d\n", p1->id);
-            printf("\n\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\tPriority -> High\n");
-            printf("\n\tDescription -> %s\n", p1->description);
-            printf("\n\tCategory -> %s\n", p1->category);
-            printf("\n\tStatus -> %s\n", p1->status);
-            printf("\n\tDate -> %s\n", p1->date);
-            printf("\n\tNote -> %s\n", p1->note);
-            printf("\n\n");  
+            printf("\n\tThe complain with the status  %s is found\n", id);
+            printf("\n\t\tComplain Id -> %d\n", p1->id);
+            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
+            printf("\n\t\tPriority -> High\n");
+            printf("\n\t\tDescription -> %s\n", p1->description);
+            printf("\n\t\tCategory -> %s\n", p1->category);
+            printf("\n\t\tStatus -> %s\n", p1->status);
+            printf("\n\t\tDate -> %s\n", p1->date);
+            printf("\n\t\tNote -> %s\n", p1->note);
+            printf("\n\n\n\n");  
 
             }
         p1 = p1->next;
     }
     if (found == 0) {
-        printf("\n\nThe complain is not found, please try again.");
+        printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
     }
 }
 
 void func_search_complains_by_category(complains* p1) {
     char id[20];
     int f = 0;
-    printf("\n\t\tPlease Enter a complain category: ");
+    printf("\n\n\t\tPlease Enter a complain category: ");
     scanf("[^\n]s", id);
     getchar();
 
     while (p1) {
         if ( strcmp(p1->category, id) == 0) {
             f = 1;
-            printf("The complain with the category  %s is found\n", id);
-            printf("\n\tComplain Id -> %d\n", p1->id);
-            printf("\n\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\tPriority -> High\n");
-            printf("\n\tDescription -> %s\n", p1->description);
-            printf("\n\tCategory -> %s\n", p1->category);
-            printf("\n\tStatus -> %s\n", p1->status);
-            printf("\n\tDate -> %s\n", p1->date);
-            printf("\n\tNote -> %s\n", p1->note);
-            printf("\n\n");  
+            printf("\n\tThe complain with the category  %s is found\n", id);
+            printf("\n\t\tComplain Id -> %d\n", p1->id);
+            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
+            printf("\n\t\tPriority -> High\n");
+            printf("\n\t\tDescription -> %s\n", p1->description);
+            printf("\n\t\tCategory -> %s\n", p1->category);
+            printf("\n\t\tStatus -> %s\n", p1->status);
+            printf("\n\t\tDate -> %s\n", p1->date);
+            printf("\n\t\tNote -> %s\n", p1->note);
+            printf("\n\n\n\n");  
         }
         p1 = p1->next;
 
     }
-    if (f == 0) printf("\n\nThe complain is not found, please try again.");
+    if (f == 0) printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
 }
 
 void    func_agent_menu(users **ptr_head, complains  **ptr_head_complains, int id_box) {
@@ -903,7 +911,7 @@ void    func_agent_menu(users **ptr_head, complains  **ptr_head_complains, int i
 
     opt = 0;
     while (1) {
-    printf("\t\tWelcome back agent!\n\n\n");
+    printf("\t\t\t\tWelcome back agent!\n\n\n");
     printf("\tPlease Enter a valid number option from the list bellow:\n");
 
     printf("\t\t1  -> Display complains list.\n");
@@ -1051,7 +1059,7 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
             break;
 
         default:
-            printf("\t\tPlease enter a valid option number.\n\n");        
+            printf("\t\tPlease enter a valid option number.\n\n\n\n");        
             }
     }
 }
@@ -1101,13 +1109,13 @@ void func_add_complains_client(complains **p, int id_box) {
 
     //printf("\n\n4- DATE: Please:     %s\n", ptr->date); 
 
-    printf("\n\nPlease enter the complain motive:   ");
+    printf("\n\n\tPlease enter the complain motive:   ");
     scanf(" %[^\n]s", ptr->motive);// maby produce qn error
     getchar();
     printf("\n");
     //printf("\n\n5- MOTIVEP lease:     %s\n",ptr->motive); 
 
-    printf("\n\nPlease enter the complain category:   ");
+    printf("\n\n\tPlease enter the complain category:   ");
     scanf("%[^\n]s", ptr->category);
     getchar();
     printf("\n");
@@ -1121,7 +1129,7 @@ void func_add_complains_client(complains **p, int id_box) {
 
     // add the description 
     
-    printf("\n\nPlease enter the complain description:   ");
+    printf("\n\n\tPlease enter the complain description:   ");
     scanf("%[^\n]s", ptr->description);
     getchar();
     
@@ -1185,7 +1193,7 @@ void func_modify_complains_client(complains *pt) {
     // print enter compla id 
     int i;
     int found;
-    printf("\n\t\tPlease Enter a complain id: ");
+    printf("\n\tPlease Enter a complain id: ");
     scanf("%d", &i);
     getchar();
     printf("\n");
@@ -1199,32 +1207,32 @@ void func_modify_complains_client(complains *pt) {
             printf("\t\t\tDate          ->   %s\n", pt->date);
             printf("\n\t\t\tUser ID     ->   %d\n", pt->id_usr);
             printf("\n\t\t\tComplain ID ->   %d\n", pt->id);
-            printf("\t\t\tMotive        ->   %s\n", pt->note);
+            printf("\n\t\t\tMotive      ->   %s\n", pt->note);
             printf("\n\t\t\tDescription ->   %s\n", pt->description);
-            if (pt->status == 0) printf("\n\t\t\tPriority    ->   High\n");
-            else if (*pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
+            if (pt->status == 0) printf("\n\t\t\tPriority       ->   High\n");
+            else if (*pt->status == 1) printf("\n\t\t\tPriority ->   Medium\n");
             else {
-                printf("\n\t\t\tPriority    ->   Low\n");
+                printf("\n\t\t\tPriority       ->   Low\n");
                 }
             printf("\t\t\tStatus        ->   %s\n", pt->status);
             printf("\t\t\tCategory      ->   %s\n", pt->category);
             printf("\t\t\tNote          ->   %s\n", pt->note);
-            printf("\n\n\n");
+            printf("\n\n\n\n");
 
             // Now ask for the  output
 
-            printf("\n\t\tPlease Enter a  Motive: ");
+            printf("\n\tPlease Enter a  Motive: ");
             scanf("%[^\n]", pt->motive);
             getchar();
             printf("\n");
-            printf("\n\t\tPlease Enter a  Description: : ");
+            printf("\n\tPlease Enter a  Description: : ");
             scanf("%[^\n]", pt->description);
             getchar();
             printf("\n");
-            printf("\n\t\tPlease Enter a  category: ");
+            printf("\n\tPlease Enter a  category: ");
             scanf("%[^\n]", pt->category);
             getchar();
-            printf("\n");
+            printf("\n\n\n\n");
    /*         printf("\n\t\tPlease Enter a  status: ");
             scanf("%[^\n]", pt->status);
             getchar();
@@ -1232,7 +1240,7 @@ void func_modify_complains_client(complains *pt) {
             found = 1;
             break;
         } else {
-            printf("You can't modify the complain\n\n");
+            printf("\n\n\tYou can't modify the complain\n\n");
             return;
         }
        // pt = pt->next;
@@ -1241,7 +1249,7 @@ void func_modify_complains_client(complains *pt) {
     }
 
     if (!found) {
-        printf("\n\t\tComplain is not found");
+        printf("\n\n\tComplain is not found");
     }
     // check if it exixt
         // if exists 
@@ -1268,7 +1276,7 @@ void func_delete_complains_client(complains **head) {
     int position = 0;
     int f = 0;
 
-    printf("\n\t\tPlease Enter a complain id: ");
+    printf("\n\tPlease Enter a complain id: ");
     scanf("%d", &id);
     getchar();
 
@@ -1281,12 +1289,12 @@ void func_delete_complains_client(complains **head) {
         tmp = tmp->next;
     }
     if (f == 0) {
-         printf("\n\tThere are no complains with that id!\n");
+         printf("\n\tThere are no complains with that id!\n\n\n\n");
          return;
     }
 
     if (*head == NULL) {
-        printf("\n\tThere are no complains yet!\n");
+        printf("\n\tThere are no complains yet!\n\n\n\n");
         return;
     } else if (position == 1 ) {
         *head = current->next;
@@ -1315,7 +1323,7 @@ void func_client_menu(users **ptr_head, complains **ptr_head_complains, int id_b
     time_t now;
 
     while (1) {
-    printf("\t\tWelcome back client!\n\n\n");
+    printf("\t\t\t\tWelcome back client!\n\n\n");
     printf("\tPlease Enter a valid number option from the list bellow:\n");
     printf("\t\t1  -> add complains.\n");
     printf("\t\t2  -> Display complains list.\n");
@@ -1479,7 +1487,7 @@ sw:
             if (!ptr_head) return -1;
         
             printf("\t\tYour account has been succefully created");
-            printf("\n\n\n");
+            printf("\n\n\n\n");
 
             goto main_menu;/****************************************************** */
 
@@ -1489,18 +1497,18 @@ sw:
                 printf("\t\tPlease enter a number id: ");
                 scanf("%d", &id_box);
                 getchar();
-                printf("\n\n\n");
+                printf("\n\n");
                 id_found = func_id_check(ptr_head, id_box);
 
                 printf("\t\tPlease enter a valid password:  ");
                 scanf(" %[^\n]", pass_box);
                 getchar();
-                printf("\n\n\n");
+                printf("\n\n");
                 pass_valid = func_pass_check_exist(ptr_head, pass_box);
                 if (id_found == -1 || pass_valid == -1) {
                     if (num_of_attempts == 0) {
                         printf("\t\tYou cant log in for %d minute", 1);
-                        printf("\n\n\n");
+                        printf("\n\n\n\n");
                         sleep(5);// becarefull where you run the prgram
                         num_of_attempts = 3;
                         goto main_menu;// Create it. goto menu; || continue ****************************************
@@ -1510,7 +1518,7 @@ sw:
                     printf("\t\tUncorrect log in, Please try again\n\n");
                 }
             } while ((id_found == -1 || pass_valid == -1));// it is or not and operator.
-            printf("\n\n\n\t\tWelcome back!\n\n\n"); //+++++++++++++++++++++++++++++++++++++++++++++++++
+            //printf("\n\n\n\t\tWelcome back!\n\n\n"); //+++++++++++++++++++++++++++++++++++++++++++++++++
             var_role = func_role_checker(ptr_head, id_box);
             switch(var_role) {
                 case(0)://admin
@@ -1533,7 +1541,7 @@ sw:
             //goto main_menu;
             return 0;
         default:
-            printf("\t\tPlease enter a valid option number\n\n\n");
+            printf("\t\tPlease enter a valid option number\n\n\n\n");
             goto main_menu;
     }
      return 0;
