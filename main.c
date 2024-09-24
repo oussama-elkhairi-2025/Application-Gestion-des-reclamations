@@ -23,8 +23,10 @@ typedef struct complains {
     char date[30];
     char note[100];
     int id_usr;
-    time_t creation_time; // you know where to use it 
-    double  delai_time; // you know where to use it 
+    time_t creation_time; // you know where to use it
+    time_t modification_time;
+    double  delai_time; // you know where to use it
+
     struct complains *next;
 } complains;
 
@@ -224,8 +226,6 @@ void func_manag_users_roles(users *p_head) {
         printf("\tId not Found.\n");
     }
 
-}
-
 
 void func_add_complains(complains **p, int id_box) {
 
@@ -272,7 +272,7 @@ void func_add_complains(complains **p, int id_box) {
 
     strftime(ptr->date, sizeof(ptr->date), "%d-%m-%Y %H:%M:%S", local);
 
-    //printf("\n\n4- DATE: Please:     %s\n", ptr->date); 
+    //printf("\n\n4- DATE: Please:     %s\n", ptr->date);
 
     printf("\n\nPlease enter the complain motive:   ");
     scanf(" %[^\n]s", ptr->motive);// maby produce qn error
@@ -965,9 +965,6 @@ void    func_agent_menu(users **ptr_head, complains  **ptr_head_complains, int i
 }
 }
 
-
-
-
 void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_box) {
     int opt;
 
@@ -1057,9 +1054,6 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
             }
     }
 }
-
-
-
 
 void func_add_complains_client(complains **p, int id_box) {
 
@@ -1151,7 +1145,6 @@ void func_add_complains_client(complains **p, int id_box) {
 }
 
 
-
 void func_display_complains_client(complains *ptr, int id) {// I have to make the output more cleaner.
 
     //complains *p;
@@ -1200,7 +1193,7 @@ void func_modify_complains_client(complains *pt) {
 
     while (pt) {
         if (pt->id == i) {
-            
+            if ((difftime(pt->modification_time, pt->creation_time) < 86400) && strcmp(pt->status, "resolved") != 0) {
             
             // print the original
             printf("\t\t\tDate          ->   %s\n", pt->date);
@@ -1238,9 +1231,14 @@ void func_modify_complains_client(complains *pt) {
             printf("\n");*/
             found = 1;
             break;
+        } else {
+            printf("You can't modify the complain\n\n");
+            return;
         }
         pt = pt->next;
+        }
     }
+
     if (!found) {
         printf("\n\t\tComplain is not found");
     }
@@ -1309,10 +1307,12 @@ void func_delete_complains_client(complains **head) {
         
 }
 
-void func_client_menu(users *ptr_head, complains *ptr_head_complains, int id_box) {
+void func_client_menu(users **ptr_head, complains **ptr_head_complains, int id_box) {
 
     int opt;
     opt = 0;
+    time_t now;
+
     while (1) {
     printf("\t\tWelcome back client!\n\n\n");
     printf("\tPlease Enter a valid number option from the list bellow:\n");
@@ -1324,18 +1324,18 @@ void func_client_menu(users *ptr_head, complains *ptr_head_complains, int id_box
     printf("\t\tEnter your option here:     ");
     scanf("%d", &opt);
     getchar();
-
     if (opt == 5) return;
 
     switch (opt) {
         case (1):
-            func_add_complains_client(ptr_head_complains, id_box);
+            func_add_complains_client(*ptr_head_complains, id_box);
             break;
        case (2):
-            func_display_complains_client(*ptr_head_complains);
+            func_display_complains_client(ptr_head_complains, id_box);
             break;
         case (3):
-            func_modify_complains_client(*ptr_head_complains);
+            ptr_head_complains->modification_time = time(NULL);
+            func_modify_complains_client(*ptr_head_complains);//motive+des+cat
             break;
         case (4):
             func_delete_complains_client(ptr_head_complains);
@@ -1401,7 +1401,7 @@ int main() {
             instead of scanf to read in an entire line. Another way is to clear the input buffer after scanf.
         */
 
-        printf("\n\n\n");
+        printf("\n\n\n\n\n\n");
         goto sw;
 
 sw: 
@@ -1412,9 +1412,8 @@ sw:
 
             //func_assign_val_to_nodes(&ptr_head, 0, "admin", "admin");
 
-
             do {
-                printf("\t\tPlease enter a number id: ");
+                printf("\t\Please enter a number id: ");
                 scanf("%d", &id_box);
                 getchar();
                 printf("\n\n\n");
@@ -1467,7 +1466,6 @@ sw:
                 getchar();
                 printf("\n\n\n");
                 pass_valid = func_pass_check_exist(ptr_head, pass_box);
-
                 if (id_found == -1 || pass_valid == -1) {
                     if (num_of_attempts == 0) {
                         printf("\t\tYou cant log in for %d minute", 1);
@@ -1481,7 +1479,6 @@ sw:
                     printf("\t\tUncorrect log in, Please try again\n\n");
                 }
             } while ((id_found == -1 || pass_valid == -1));// it is or not and operator.
-
             printf("\n\n\n\t\tWelcome back friend\n\n\n"); //+++++++++++++++++++++++++++++++++++++++++++++++++
             var_role = func_role_checker(ptr_head, id_box);
             switch(var_role) {
