@@ -897,6 +897,77 @@ void func_search_complains_by_category(complains* p1) {
     if (f == 0) printf("\n\nThe complain is not found, please try again.");
 }
 
+void    func_agent_menu(users **ptr_head, complains  **ptr_head_complains, int id_box) {
+    int opt;
+
+    opt = 0;
+    while (1) {
+    printf("\t\tWelcome back agent!\n\n\n");
+    printf("\tPlease Enter a valid number option from the list bellow:\n");
+
+    printf("\t\t1  -> Display complains list.\n");
+    printf("\t\t2  -> Modify a complain.\n");
+    printf("\t\t3  -> Delete a complain.\n");
+    printf("\t\t4  -> Search for a complain by its id.\n");
+    printf("\t\t5  -> Search for a complain by user id.\n");
+    printf("\t\t6  -> Search for a complain by its date.\n");
+    printf("\t\t7  -> Search for complains by status.\n");
+    printf("\t\t8  -> Search for complains by category.\n");
+    //printf("\t\t11 -> Display complains by priority.\n");
+    printf("\t\t9  -> Process a complain\n");
+    printf("\t\t10 -> Display the number of complains.\n");
+    /*printf("\t\t14 -> The Average delai time.\n");
+    printf("\t\t15 -> The rate of resolved complains.\n");
+    printf("\t\t16 -> Raport\n\n");*/
+    printf("\t\t11 -> Log out\n\n");
+    printf("\t\tEnter your option here:     ");
+    scanf("%d", &opt);
+    getchar();
+
+    if (opt == 11) return;
+
+    switch (opt) {
+       case (1):
+            func_display_complains(*ptr_head_complains);
+            break;
+        case (2):
+            func_modify_complains(*ptr_head_complains);
+            break;
+        case (3):
+            func_delete_complains(ptr_head_complains);
+            break;
+        case (4):
+            func_search_complains_by_complain_id(*ptr_head_complains);
+            break;
+        case (5):
+            func_search_complains_by_user_id(*ptr_head_complains);
+            break;
+        case (6):
+            func_search_complains_by_date(*ptr_head_complains);
+            break;
+        case (7):
+            func_search_complains_by_status(*ptr_head_complains);
+            break;
+        case (8):
+            func_search_complains_by_category(*ptr_head_complains);
+            break;
+        case (9):
+            func_handle_complains(*ptr_head_complains);
+            break;
+        case (10):
+            func_display_number_of_complains(*ptr_head_complains);
+            break;
+        case (11):
+            break;
+        default:
+            printf("\t\tPlease enter a valid option number.\n\n");        
+    }
+}
+}
+
+
+
+
 void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_box) {
     int opt;
 
@@ -983,9 +1054,299 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
 
         default:
             printf("\t\tPlease enter a valid option number.\n\n");        
+            }
     }
 }
+
+
+
+
+void func_add_complains_client(complains **p, int id_box) {
+
+
+    //char moti[100]; no need for now
+    time_t now;
+
+    // Memory allocation for the new node/complain.
+    complains *ptr = (complains *)malloc(sizeof(complains));
+
+    if (!ptr) {
+        printf("Memory allocation for the new node has failed!");// Handle in the callign func
+        return;
+    }
+
+    // <<<<<<<<<<<<<<<<<node elements initialization by default>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+     // Seed the random number generator with the current time
+    srand(time(0));
+
+    // Generate a random ID between 1000 and 99999 (5-digit ID)
+    int complaintID = rand() % 90000 + 10000;
+
+ 
+    ptr->id = complaintID;//*************************************************************** */
+  
+    //printf("\n\n1- ID Please:     %d\n", ptr->id); 
+    
+    strcpy(ptr->status, "waiting");
+    
+    strcpy(ptr->note, "no note for the moment");
+    
+    //printf("\n\n3- NOTE Please:     %s\n",ptr->note); 
+
+    struct tm *local;
+    time(&now); // Get the current time
+    local = localtime(&now); // Convert to local time
+
+    ptr->creation_time = time(NULL);
+
+    //printf("\n\n\n\n\n\n ---------------->  \n\n", ptr->creation_time);
+
+    strftime(ptr->date, sizeof(ptr->date), "%d-%m-%Y %H:%M:%S", local);
+
+    //printf("\n\n4- DATE: Please:     %s\n", ptr->date); 
+
+    printf("\n\nPlease enter the complain motive:   ");
+    scanf(" %[^\n]s", ptr->motive);// maby produce qn error
+    getchar();
+    printf("\n");
+    //printf("\n\n5- MOTIVEP lease:     %s\n",ptr->motive); 
+
+    printf("\n\nPlease enter the complain category:   ");
+    scanf("%[^\n]s", ptr->category);
+    getchar();
+    printf("\n");
+    
+    //printf("\n\n6- CATEGORY Please:     %s\n",ptr->category); 
+
+    ptr->id_usr = id_box;
+
+    //printf("\n\n7- id user Please:     %d\n", ptr->id_usr ); 
+    //printf("\n");
+
+    // add the description 
+    
+    printf("\n\nPlease enter the complain description:   ");
+    scanf("%[^\n]s", ptr->description);
+    getchar();
+    
+    
+    //printf("\n\n8- description  Please:     %s\n",ptr->description);
+
+    ptr->next = NULL;
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<, ask thye user to enter data
+
+
+    if (*p != NULL) {
+        complains *t; // a pointer to traverse the linked list. in case there are more than one node in the list
+        t = *p;
+        while (t->next != NULL) {
+            t = t->next;
+        }
+        t->next = ptr;
+
+    } else {// In case there is no node in the list 
+        *p = ptr;
+    }
 }
+
+
+
+void func_display_complains_client(complains *ptr, int id) {// I have to make the output more cleaner.
+
+    //complains *p;
+
+
+    printf("\t\tAll complains are list bellow\n\n");
+    while (ptr != NULL) {
+        if (ptr->id_usr == id) {
+        printf("\t\t\tDate          ->   %s\n", ptr->date);
+        printf("\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
+        printf("\n\t\t\tComplain ID ->   %d\n", ptr->id);
+        printf("\t\t\tMotive        ->   %s\n", ptr->note);
+        printf("\n\t\t\tDescription ->   %s\n", ptr->description);
+
+        if (ptr->status == 0) {
+                printf("\n\t\t\tPriority    ->   High\n");
+                } else if (*ptr->status == 1) { /*
+                /tmp/J3hiSXCGQj.c:387:33: warning: comparison between pointer and integer
+    387 |             else if (pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
+    |   
+                */
+                    printf("\n\t\t\tPriority    ->   Medium\n");
+                } else {
+                    printf("\n\t\t\tPriority    ->   Low\n");
+            }
+            printf("\t\t\tStatus        ->   %s\n", ptr->status);
+            printf("\t\t\tCategory      ->   %s\n", ptr->category);
+            printf("\t\t\tNote          ->   %s\n", ptr->note);
+            printf("\n\n\n");
+            return;
+        }
+        ptr = ptr->next;
+    }
+}
+
+
+void func_modify_complains_client(complains *pt) {
+    // print enter compla id 
+    int i;
+    int found;
+    printf("\n\t\tPlease Enter a complain id: ");
+    scanf("%d", &i);
+    getchar();
+
+    found = 0;
+
+    while (pt) {
+        if (pt->id == i) {
+            
+            
+            // print the original
+            printf("\t\t\tDate          ->   %s\n", pt->date);
+            printf("\n\t\t\tUser ID     ->   %d\n", pt->id_usr);
+            printf("\n\t\t\tComplain ID ->   %d\n", pt->id);
+            printf("\t\t\tMotive        ->   %s\n", pt->note);
+            printf("\n\t\t\tDescription ->   %s\n", pt->description);
+            if (pt->status == 0) printf("\n\t\t\tPriority    ->   High\n");
+            else if (*pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
+            else {
+                printf("\n\t\t\tPriority    ->   Low\n");
+                }
+            printf("\t\t\tStatus        ->   %s\n", pt->status);
+            printf("\t\t\tCategory      ->   %s\n", pt->category);
+            printf("\t\t\tNote          ->   %s\n", pt->note);
+            printf("\n\n\n");
+
+            // Now ask for the  output
+
+            printf("\n\t\tPlease Enter a  Motive: ");
+            scanf("%[^\n]", pt->motive);
+            getchar();
+            printf("\n");
+            printf("\n\t\tPlease Enter a  Description: : ");
+            scanf("%[^\n]", pt->description);
+            getchar();
+            printf("\n");
+            printf("\n\t\tPlease Enter a  category: ");
+            scanf("%[^\n]", pt->category);
+            getchar();
+            printf("\n");
+   /*         printf("\n\t\tPlease Enter a  status: ");
+            scanf("%[^\n]", pt->status);
+            getchar();
+            printf("\n");*/
+            found = 1;
+            break;
+        }
+        pt = pt->next;
+    }
+    if (!found) {
+        printf("\n\t\tComplain is not found");
+    }
+    // check if it exixt
+        // if exists 
+            // afiicher 
+            // print enter motiv, des, cate
+            // print all good
+        // if not 
+            //print makaynash
+            // go back
+
+
+}
+
+
+
+void func_delete_complains_client(complains **head) {
+    
+
+    // How to delete
+    complains* current = *head;
+    complains* previous = *head;
+    complains* tmp = *head;
+    int id;
+    int position = 0;
+    int f = 0;
+
+    printf("\n\t\tPlease Enter a complain id: ");
+    scanf("%d", &id);
+    getchar();
+
+    while (tmp) {
+        position++;
+        if (tmp->id == id) {
+            f = 1;
+            break;
+            }
+        tmp = tmp->next;
+    }
+    if (f == 0) {
+         printf("\n\tThere are no complains with that id!\n");
+         return;
+    }
+
+    if (*head == NULL) {
+        printf("\n\tThere are no complains yet!\n");
+        return;
+    } else if (position == 1 ) {
+        *head = current->next;
+        free(current);
+        current = NULL;
+        return;
+    } else {
+        while (position != 1) {
+            previous = current;
+            current = current->next;
+            position--;
+        }
+
+        previous->next = current->next;
+        free(current);
+        current = NULL;
+        
+    }
+        
+}
+
+void func_client_menu(users *ptr_head, complains *ptr_head_complains, int id_box) {
+
+    int opt;
+    opt = 0;
+    while (1) {
+    printf("\t\tWelcome back client!\n\n\n");
+    printf("\tPlease Enter a valid number option from the list bellow:\n");
+    printf("\t\t1  -> add complains.\n");
+    printf("\t\t2  -> Display complains list.\n");
+    printf("\t\t3  -> Modify a complain.\n");
+    printf("\t\t4  -> Delete a complain.\n");
+    printf("\t\t5 -> Log out\n\n");
+    printf("\t\tEnter your option here:     ");
+    scanf("%d", &opt);
+    getchar();
+
+    if (opt == 5) return;
+
+    switch (opt) {
+        case (1):
+            func_add_complains_client(ptr_head_complains, id_box);
+            break;
+       case (2):
+            func_display_complains_client(*ptr_head_complains);
+            break;
+        case (3):
+            func_modify_complains_client(*ptr_head_complains);
+            break;
+        case (4):
+            func_delete_complains_client(ptr_head_complains);
+            break;
+        default:
+            printf("\t\tPlease enter a valid option number.\n\n");        
+        }
+    }
+}
+
+
 
 int main() {
 
@@ -1127,19 +1488,17 @@ sw:
                 case(0)://admin
                     func_admin_menu(&ptr_head, &ptr_head_complains, id_box);
                     goto main_menu;
-                // case(1)://agent
-                //     func_agent_menu(&ptr_head, &ptr_head_complains, id_box);
-                //     goto main_menu;
-                // case(2)://client
-                //     func_client_menu(&ptr_head, &ptr_head_complains, id_box);
-                //     goto main_menu;
-            }
-            break;
-        case(3):
-            // just for the test
-            func_display_users(ptr_head);
-            return 0;
+                case(1)://agent
+                    func_agent_menu(&ptr_head, &ptr_head_complains, id_box);
+                    goto main_menu;
+                case(2)://client
+                     func_client_menu(&ptr_head, &ptr_head_complains, id_box);
+                     goto main_menu;
+                }
 
+        case(3):
+            func_display_users(ptr_head);
+            goto main_menu;
         default:
             printf("\t\tPlease enter a valid option number\n\n\n");
             goto main_menu;
