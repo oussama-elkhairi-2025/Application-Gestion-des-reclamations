@@ -13,6 +13,7 @@ typedef struct users {
 } users;
 
 
+
 typedef struct complains {
     int id;
     char motive[100];
@@ -29,6 +30,7 @@ typedef struct complains {
 
     struct complains *next;
 } complains;
+
 
 
 /*
@@ -981,8 +983,90 @@ void    func_agent_menu(users **ptr_head, complains  **ptr_head_complains, int i
             break;
         default:
             printf("\t\tPlease enter a valid option number.\n\n");        
+            }
     }
 }
+
+void func_generate_raport_file(complains *p) {
+
+    FILE *file_ptr;
+    complains* ptr = p;
+    file_ptr = fopen("raport.txt", "w");
+
+    if (file_ptr == NULL) 
+    {
+        printf("\n\n\nCould not open file\n\n\n"); 
+        return; 
+    }
+
+    fprintf(file_ptr, "\t\tAll the new complains for today: \n\n");
+    while (ptr) {
+        fprintf(file_ptr, "\t\t\tDate          ->   %s\n", ptr->date);
+        fprintf(file_ptr, "\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
+        fprintf(file_ptr, "\n\t\t\tComplain ID ->   %d\n", ptr->id);
+        fprintf(file_ptr, "\t\t\tMotive        ->   %s\n", ptr->note);
+        fprintf(file_ptr,"\n\t\t\tDescription ->   %s\n", ptr->description);
+
+        if (ptr->status == 0) {
+            fprintf(file_ptr, "\n\t\t\tPriority    ->   High\n");
+            } else if (*ptr->status == 1) { /*
+            /tmp/J3hiSXCGQj.c:387:33: warning: comparison between pointer and integer
+  387 |             else if (pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
+|   
+            */
+                fprintf(file_ptr, "\n\t\t\tPriority    ->   Medium\n");
+            } else {
+                fprintf(file_ptr, "\n\t\t\tPriority    ->   Low\n");
+        }
+        fprintf(file_ptr, "\t\t\tStatus        ->   %s\n", ptr->status);
+        fprintf(file_ptr, "\t\t\tCategory      ->   %s\n", ptr->category);
+        fprintf(file_ptr, "\t\t\tNote          ->   %s\n", ptr->note);
+        fprintf(file_ptr, "\n\n\n");
+        ptr = ptr->next;
+
+
+    }
+    
+    
+    
+    
+    ptr = p;
+
+    fprintf(file_ptr, "\t\t\nAll the new resolved complains\n\n\n");
+    while (ptr) {
+        if (strcmp(ptr->status, "resolved") == 0){
+        fprintf(file_ptr, "\t\t\tDate          ->   %s\n", ptr->date);
+        fprintf(file_ptr, "\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
+        fprintf(file_ptr, "\n\t\t\tComplain ID ->   %d\n", ptr->id);
+        fprintf(file_ptr, "\t\t\tMotive        ->   %s\n", ptr->note);
+        fprintf(file_ptr,"\n\t\t\tDescription ->   %s\n", ptr->description);
+
+        if (ptr->status == 0) {
+            fprintf(file_ptr, "\n\t\t\tPriority    ->   High\n");
+            } else if (*ptr->status == 1) { /*
+            /tmp/J3hiSXCGQj.c:387:33: warning: comparison between pointer and integer
+  387 |             else if (pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
+|   
+            */
+                fprintf(file_ptr, "\n\t\t\tPriority    ->   Medium\n");
+            } else {
+                fprintf(file_ptr, "\n\t\t\tPriority    ->   Low\n");
+        }
+        fprintf(file_ptr, "\t\t\tStatus        ->   %s\n", ptr->status);
+        fprintf(file_ptr, "\t\t\tCategory      ->   %s\n", ptr->category);
+        fprintf(file_ptr, "\t\t\tNote          ->   %s\n", ptr->note);
+        fprintf(file_ptr, "\n\n\n");
+        }
+        ptr = ptr->next;
+
+
+    }
+
+
+
+
+    fclose(file_ptr);
+
 }
 
 void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_box) {
@@ -1063,7 +1147,7 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
             func_rate_of_resolved_complains(*ptr_head_complains);
             break;
     case (16):
-            //Raport
+            func_generate_raport_file(*ptr_head_complains);
             break;
     case (17):
             //log out
