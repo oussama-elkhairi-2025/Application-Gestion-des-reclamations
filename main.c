@@ -202,21 +202,20 @@ void func_manag_users_roles(users *p_head) {
     int search_id = 0;
     int exist = 1;
     while (traverse_ptr != NULL) {
-        printf("\t\tUser  %d: %d\n\n", ++i, traverse_ptr->id);
+        printf("\tUser  %d: %d\n\n", ++i, traverse_ptr->id);
         traverse_ptr = traverse_ptr->next;
     }
 
     traverse_ptr = p_head;// to gert back to the first node
-    printf("\tPlease enter a user id to switch the role to agent: ");
+    printf("\t\tPlease enter a user id to switch the role to agent: \n");
     scanf("%d", &search_id);
     getchar();
-    printf("\n");
 
     if (search_id != 0) {
         while (traverse_ptr != NULL) {
             if (traverse_ptr->id == search_id) {
                 strcpy(traverse_ptr->role, "agent");
-                printf("\t\tThe user with id %d is now %s\n\n\n\n\n\n", traverse_ptr->id, traverse_ptr->role);
+                printf("The user with id %d is now %s\n\n", traverse_ptr->id, traverse_ptr->role);
                 exist = 1;
                 break;
             }
@@ -257,7 +256,7 @@ void func_add_complains(complains **p, int id_box) {
     
     strcpy(ptr->status, "waiting");
     
-    //printf("\n\n\t\t2- Status Please:     %s\n",ptr->status);
+    printf("\n\n2- Status Please:     %s\n",ptr->status);
 
     strcpy(ptr->note, "no note for the moment");
     
@@ -275,13 +274,13 @@ void func_add_complains(complains **p, int id_box) {
 
     //printf("\n\n4- DATE: Please:     %s\n", ptr->date);
 
-    printf("\n\n\t\tPlease enter the complain motive:   ");
+    printf("\n\nPlease enter the complain motive:   ");
     scanf(" %[^\n]s", ptr->motive);// maby produce qn error
     getchar();
     printf("\n");
     //printf("\n\n5- MOTIVEP lease:     %s\n",ptr->motive); 
 
-    printf("\n\n\t\tPlease enter the complain category:   ");
+    printf("\n\nPlease enter the complain category:   ");
     scanf("%[^\n]s", ptr->category);
     getchar();
     printf("\n");
@@ -295,10 +294,10 @@ void func_add_complains(complains **p, int id_box) {
 
     // add the description 
     
-    printf("\n\n\t\tPlease enter the complain description:   ");
+    printf("\n\nPlease enter the complain description:   ");
     scanf("%[^\n]s", ptr->description);
     getchar();
-    printf("\n\n\n\n\n\n\n\n");
+    
     
     //printf("\n\n8- description  Please:     %s\n",ptr->description);
 
@@ -342,10 +341,10 @@ void func_display_complains(complains *ptr) {// I have to make the output more c
     printf("\t\tAll complains are list bellow\n\n");
     while (ptr != NULL) {
         printf("\t\t\tDate          ->   %s\n", ptr->date);
-        printf("\t\t\t\tUser ID     ->   %d\n", ptr->id_usr);
-        printf("\t\t\t\tComplain ID ->   %d\n", ptr->id);
+        printf("\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
+        printf("\n\t\t\tComplain ID ->   %d\n", ptr->id);
         printf("\t\t\tMotive        ->   %s\n", ptr->note);
-        printf("\t\t\t\tDescription ->   %s\n", ptr->description);
+        printf("\n\t\t\tDescription ->   %s\n", ptr->description);
 
         if (ptr->status == 0) {
             printf("\n\t\t\tPriority    ->   High\n");
@@ -361,7 +360,7 @@ void func_display_complains(complains *ptr) {// I have to make the output more c
         printf("\t\t\tStatus        ->   %s\n", ptr->status);
         printf("\t\t\tCategory      ->   %s\n", ptr->category);
         printf("\t\t\tNote          ->   %s\n", ptr->note);
-        printf("\n\n\n\n\n\n\n\n");
+        printf("\n\n\n");
         ptr = ptr->next;
     }
 }
@@ -750,6 +749,7 @@ void    func_display_number_of_complains(complains *p) {
 }
 
 double func_add_all_delai_time(complains *h) {
+
     double sum = 0;
 
     while (h) {
@@ -779,9 +779,9 @@ void  func_average_delai_time(complains *head) {
 
     double sum_all_delais = func_add_all_delai_time(head);
     printf("        %lf     \n", sum_all_delais);
-    int sum_all_handeled_comp = func_sum_all_handeled_comp(head);
+    double sum_all_handeled_comp = func_sum_all_handeled_comp(head);
     printf("        %d     \n", sum_all_handeled_comp);
-    double avr_del_time = (sum_all_handeled_comp/sum_all_delais);
+    double avr_del_time = (sum_all_delais/sum_all_handeled_comp);
     printf("        %lf    \n", avr_del_time);
     printf("\n\n\t\tThe average delai Time in seconds is:  %lf \n", avr_del_time);
 }
@@ -904,7 +904,7 @@ void    func_agent_menu(users **ptr_head, complains  **ptr_head_complains, int i
     opt = 0;
     while (1) {
     printf("\t\tWelcome back agent!\n\n\n");
-    printf("\tPlease Enter a valid number option from the list bellow:\n\n");
+    printf("\tPlease Enter a valid number option from the list bellow:\n");
 
     printf("\t\t1  -> Display complains list.\n");
     printf("\t\t2  -> Modify a complain.\n");
@@ -971,7 +971,7 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
 
     opt = 0;
     while (1) {
-    printf("\t\t\t\t\tWelcome back admin!\n\n");
+    printf("\t\t\t\tWelcome back admin!\n\n");
     printf("\tPlease Enter a valid number option from the list bellow:\n");
     printf("\t\t1  -> Manage users roles.\n");
     printf("\t\t2  -> add complains.\n");
@@ -993,12 +993,8 @@ void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_bo
     printf("\t\tEnter your option here:     ");
     scanf("%d", &opt);
     getchar();
-    printf("\n");
 
-    if (opt == 17) {
-        printf("\n\n\n\n");
-        return;
-    }
+    if (opt == 17) return;
 
     switch (opt) {
         case (1):
@@ -1179,7 +1175,7 @@ void func_display_complains_client(complains *ptr, int id) {// I have to make th
             printf("\t\t\tCategory      ->   %s\n", ptr->category);
             printf("\t\t\tNote          ->   %s\n", ptr->note);
             printf("\n\n\n");
-            return;
+            //return;
         }
         ptr = ptr->next;
     }
@@ -1192,7 +1188,7 @@ void func_modify_complains_client(complains *pt) {
     printf("\n\t\tPlease Enter a complain id: ");
     scanf("%d", &i);
     getchar();
-
+    printf("\n");
     found = 0;
 
     while (pt) {
@@ -1239,8 +1235,9 @@ void func_modify_complains_client(complains *pt) {
             printf("You can't modify the complain\n\n");
             return;
         }
+       // pt = pt->next;
+}
         pt = pt->next;
-        }
     }
 
     if (!found) {
@@ -1328,7 +1325,10 @@ void func_client_menu(users **ptr_head, complains **ptr_head_complains, int id_b
     printf("\t\tEnter your option here:     ");
     scanf("%d", &opt);
     getchar();
-    if (opt == 5) return;
+    if (opt == 5) {
+        printf("\n\n\n\n");
+        return;
+    }
 
     switch (opt) {
         case (1):
@@ -1349,7 +1349,6 @@ void func_client_menu(users **ptr_head, complains **ptr_head_complains, int id_b
         }
     }
 }
-
 
 
 void func_del_usrs(users * curr) {
@@ -1480,7 +1479,7 @@ sw:
             if (!ptr_head) return -1;
         
             printf("\t\tYour account has been succefully created");
-            printf("\n\n\n\n\n\n");
+            printf("\n\n\n");
 
             goto main_menu;/****************************************************** */
 
@@ -1511,7 +1510,7 @@ sw:
                     printf("\t\tUncorrect log in, Please try again\n\n");
                 }
             } while ((id_found == -1 || pass_valid == -1));// it is or not and operator.
-            printf("\n\n\n\n\n\n\n\n"); //+++++++++++++++++++++++++++++++++++++++++++++++++
+            printf("\n\n\n\t\tWelcome back!\n\n\n"); //+++++++++++++++++++++++++++++++++++++++++++++++++
             var_role = func_role_checker(ptr_head, id_box);
             switch(var_role) {
                 case(0)://admin
