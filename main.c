@@ -225,7 +225,7 @@ void func_manag_users_roles(users *p_head) {
     if (search_id != 0 && exist == 0) {
         printf("\tId not Found.\n");
     }
-
+}
 
 void func_add_complains(complains **p, int id_box) {
 
@@ -1328,13 +1328,13 @@ void func_client_menu(users **ptr_head, complains **ptr_head_complains, int id_b
 
     switch (opt) {
         case (1):
-            func_add_complains_client(*ptr_head_complains, id_box);
+            func_add_complains_client(ptr_head_complains, id_box);
             break;
        case (2):
-            func_display_complains_client(ptr_head_complains, id_box);
+            func_display_complains_client(*ptr_head_complains, id_box);
             break;
         case (3):
-            ptr_head_complains->modification_time = time(NULL);
+            (*ptr_head_complains)->modification_time = time(NULL);
             func_modify_complains_client(*ptr_head_complains);//motive+des+cat
             break;
         case (4):
@@ -1347,6 +1347,34 @@ void func_client_menu(users **ptr_head, complains **ptr_head_complains, int id_b
 }
 
 
+
+void func_del_usrs(users * curr) {
+
+    // Base case: If the list is empty, return
+    if (curr == NULL) {
+        return;
+    }
+
+    // Recursively delete the next node
+    func_del_usrs(curr->next);
+
+    // Delete the current node
+    free(curr);
+}
+
+void func_del_comp(complains* curr) {
+
+    // Base case: If the list is empty, return
+    if (curr == NULL) {
+        return;
+    }
+
+    // Recursively delete the next node
+    func_del_comp(curr->next);
+
+    // Delete the current node
+    free(curr);
+}
 
 int main() {
 
@@ -1413,7 +1441,7 @@ sw:
             //func_assign_val_to_nodes(&ptr_head, 0, "admin", "admin");
 
             do {
-                printf("\t\Please enter a number id: ");
+                printf("\t\tPlease enter a number id: ");
                 scanf("%d", &id_box);
                 getchar();
                 printf("\n\n\n");
@@ -1470,7 +1498,7 @@ sw:
                     if (num_of_attempts == 0) {
                         printf("\t\tYou cant log in for %d minute", 1);
                         printf("\n\n\n");
-                        sleep(3);// becarefull where you run the prgram
+                        sleep(5);// becarefull where you run the prgram
                         num_of_attempts = 3;
                         goto main_menu;// Create it. goto menu; || continue ****************************************
                     } else {
@@ -1492,13 +1520,18 @@ sw:
                      func_client_menu(&ptr_head, &ptr_head_complains, id_box);
                      goto main_menu;
                 }
-
         case(3):
             func_display_users(ptr_head);
+
+            // free alocated memory!
+            //func_del_usrs(ptr_head);
+            //func_del_comp(ptr_head_complains);
+
             goto main_menu;
         default:
             printf("\t\tPlease enter a valid option number\n\n\n");
             goto main_menu;
     }
-    return 0;
-}
+     return 0;
+    }
+//}
