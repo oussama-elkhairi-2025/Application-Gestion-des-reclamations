@@ -816,18 +816,18 @@ int func_sum_all_comp(complains *h) {
 void    func_rate_of_resolved_complains(complains *h) {
 
     double sum_all_handeled_comp = func_sum_all_handeled_comp(h);
-       printf("\n\n\t\t        %d     \n", sum_all_handeled_comp);
+       //printf("\n\n\t\t        %d     \n", sum_all_handeled_comp);
 
     double sum_all_comp = func_sum_all_comp(h);
-        printf("\n\n\t\t        %d     \n", sum_all_comp);
+        //printf("\n\n\t\t        %d     \n", sum_all_comp);
     
-    double rate = ((sum_all_handeled_comp / sum_all_comp) * 0.01);
+    double rate = ((sum_all_handeled_comp / sum_all_comp) * 100);
 
     if (sum_all_handeled_comp == 0 || sum_all_comp == 0) {// to avoid the -nan value
         printf("\n\n\t\tThe resolved complains rate is:  0\n\n\n\n");
         return;
     }
-    printf("\n\n\t\tThe resolved complains rate is:  %f\n\n\n\n", rate);
+    printf("\n\n\t\tThe resolved complains rate is:  %.2f\n\n\n\n", rate);
 }
 
 
