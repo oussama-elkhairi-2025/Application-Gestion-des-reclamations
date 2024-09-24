@@ -258,7 +258,7 @@ void func_add_complains(complains **p, int id_box) {
     
     strcpy(ptr->status, "waiting");
     
-    printf("\n\n2- Status Please:     %s\n",ptr->status);
+    //printf("\n\n2- Status Please:     %s\n",ptr->status);
 
     strcpy(ptr->note, "no note for the moment");
     
@@ -276,13 +276,13 @@ void func_add_complains(complains **p, int id_box) {
 
     //printf("\n\n4- DATE: Please:     %s\n", ptr->date);
 
-    printf("\n\nPlease enter the complain motive:   ");
+    printf("\n\n\t\tPlease enter the complain motive:   ");
     scanf(" %[^\n]s", ptr->motive);// maby produce qn error
     getchar();
     printf("\n");
     //printf("\n\n5- MOTIVEP lease:     %s\n",ptr->motive); 
 
-    printf("\n\nPlease enter the complain category:   ");
+    printf("\n\n\t\tPlease enter the complain category:   ");
     scanf("%[^\n]s", ptr->category);
     getchar();
     printf("\n");
@@ -296,11 +296,10 @@ void func_add_complains(complains **p, int id_box) {
 
     // add the description 
     
-    printf("\n\nPlease enter the complain description:   ");
+    printf("\n\n\t\tPlease enter the complain description:   ");
     scanf("%[^\n]s", ptr->description);
     getchar();
-    
-    
+    printf("\n\n");
     //printf("\n\n8- description  Please:     %s\n",ptr->description);
 
     ptr->next = NULL;
@@ -385,7 +384,7 @@ void func_modify_complains(complains *pt) {
     printf("\n\t\tPlease Enter a complain id: ");
     scanf("%d", &i);
     getchar();
-
+    printf("\n");
     found = 0;
 
     while (pt) {
@@ -770,9 +769,9 @@ double func_add_all_delai_time(complains *h) {
     return sum;
 }
 
-int func_sum_all_handeled_comp(complains *h) {
+double func_sum_all_handeled_comp(complains *h) {
 
-    int sum = 0;
+    double sum = 0;
 
     while (h) {
         if (strcmp(h->status, "resolved") == 0) {
@@ -783,16 +782,23 @@ int func_sum_all_handeled_comp(complains *h) {
     return sum;
 }
 
+
 void  func_average_delai_time(complains *head) {
 
     double sum_all_delais = func_add_all_delai_time(head);
-    printf("\n\t\t        %lf     \n", sum_all_delais);
+    //printf("\n\t\t        %.2f     \n", sum_all_delais);
     double sum_all_handeled_comp = func_sum_all_handeled_comp(head);
-    printf("\n\t\t        %d     \n", sum_all_handeled_comp);
+    //printf("\n\t\t        %.2f     \n", sum_all_handeled_comp);
     double avr_del_time = (sum_all_delais/sum_all_handeled_comp);
-    printf("\n\t\t        %lf    \n", avr_del_time);
+    //printf("\n\t\t        %.2f    \n", avr_del_time);
+
+    if (sum_all_delais == 0 || sum_all_handeled_comp == 0) {
+        printf("\n\n\t\tThe average delai Time in seconds is:  0 \n\n\n\n");
+        return;
+    }
     printf("\n\n\t\tThe average delai Time in seconds is:  %lf \n\n\n\n", avr_del_time);
 }
+
 
 int func_sum_all_comp(complains *h) {
 
@@ -809,13 +815,18 @@ int func_sum_all_comp(complains *h) {
 
 void    func_rate_of_resolved_complains(complains *h) {
 
-    int sum_all_handeled_comp = func_sum_all_handeled_comp(h);
+    double sum_all_handeled_comp = func_sum_all_handeled_comp(h);
        printf("\n\n\t\t        %d     \n", sum_all_handeled_comp);
 
-    int sum_all_comp = func_sum_all_comp(h);
+    double sum_all_comp = func_sum_all_comp(h);
         printf("\n\n\t\t        %d     \n", sum_all_comp);
+    
+    double rate = ((sum_all_handeled_comp / sum_all_comp) * 0.01);
 
-    float rate = ((sum_all_handeled_comp / sum_all_comp) * 0.01);
+    if (sum_all_handeled_comp == 0 || sum_all_comp == 0) {// to avoid the -nan value
+        printf("\n\n\t\tThe resolved complains rate is:  0\n\n\n\n");
+        return;
+    }
     printf("\n\n\t\tThe resolved complains rate is:  %f\n\n\n\n", rate);
 }
 
@@ -1159,7 +1170,7 @@ void func_display_complains_client(complains *ptr, int id) {// I have to make th
     //complains *p;
 
 
-    printf("\t\tAll complains are list bellow\n\n");
+    printf("\n\t\tAll complains are list bellow\n\n");
     while (ptr != NULL) {
         if (ptr->id_usr == id) {
         printf("\t\t\tDate          ->   %s\n", ptr->date);
@@ -1169,7 +1180,7 @@ void func_display_complains_client(complains *ptr, int id) {// I have to make th
         printf("\n\t\t\tDescription ->   %s\n", ptr->description);
 
         if (ptr->status == 0) {
-                printf("\n\t\t\tPriority    ->   High\n");
+                printf("\n\t\t\tPriority        ->   High\n");
                 } else if (*ptr->status == 1) { /*
                 /tmp/J3hiSXCGQj.c:387:33: warning: comparison between pointer and integer
     387 |             else if (pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
@@ -1193,15 +1204,15 @@ void func_modify_complains_client(complains *pt) {
     // print enter compla id 
     int i;
     int found;
-    printf("\n\tPlease Enter a complain id: ");
+    printf("\n\n\t\tPlease Enter a complain id: ");
     scanf("%d", &i);
     getchar();
-    printf("\n");
+    printf("\n\n");
     found = 0;
 
     while (pt) {
         if (pt->id == i) {
-            if ((difftime(pt->modification_time, pt->creation_time) < 86400) && strcmp(pt->status, "resolved") != 0) {
+            if ((difftime(pt->modification_time, pt->creation_time) < 86400) ) {
             
             // print the original
             printf("\t\t\tDate          ->   %s\n", pt->date);
@@ -1214,22 +1225,22 @@ void func_modify_complains_client(complains *pt) {
             else {
                 printf("\n\t\t\tPriority       ->   Low\n");
                 }
-            printf("\t\t\tStatus        ->   %s\n", pt->status);
-            printf("\t\t\tCategory      ->   %s\n", pt->category);
-            printf("\t\t\tNote          ->   %s\n", pt->note);
+            printf("\n\t\t\tStatus        ->   %s\n", pt->status);
+            printf("\n\t\t\tCategory      ->   %s\n", pt->category);
+            printf("\n\t\t\tNote          ->   %s\n", pt->note);
             printf("\n\n\n\n");
 
             // Now ask for the  output
 
-            printf("\n\tPlease Enter a  Motive: ");
+            printf("\t\tPlease Enter a  Motive: ");
             scanf("%[^\n]", pt->motive);
             getchar();
             printf("\n");
-            printf("\n\tPlease Enter a  Description: : ");
+            printf("\n\t\tPlease Enter a  Description: : ");
             scanf("%[^\n]", pt->description);
             getchar();
             printf("\n");
-            printf("\n\tPlease Enter a  category: ");
+            printf("\n\t\tPlease Enter a  category: ");
             scanf("%[^\n]", pt->category);
             getchar();
             printf("\n\n\n\n");
@@ -1240,7 +1251,7 @@ void func_modify_complains_client(complains *pt) {
             found = 1;
             break;
         } else {
-            printf("\n\n\tYou can't modify the complain\n\n");
+            printf("\n\n\tYou can't modify the complain\n\n\n\n");
             return;
         }
        // pt = pt->next;
@@ -1249,7 +1260,7 @@ void func_modify_complains_client(complains *pt) {
     }
 
     if (!found) {
-        printf("\n\n\tComplain is not found");
+        printf("\n\n\t\tComplain is not found\n\n\n\n");
     }
     // check if it exixt
         // if exists 
@@ -1323,13 +1334,13 @@ void func_client_menu(users **ptr_head, complains **ptr_head_complains, int id_b
     time_t now;
 
     while (1) {
-    printf("\t\t\t\tWelcome back client!\n\n\n");
+    printf("\n\n\n\n\t\t\tWelcome back client!\n\n\n");
     printf("\tPlease Enter a valid number option from the list bellow:\n");
     printf("\t\t1  -> add complains.\n");
     printf("\t\t2  -> Display complains list.\n");
     printf("\t\t3  -> Modify a complain.\n");
     printf("\t\t4  -> Delete a complain.\n");
-    printf("\t\t5 -> Log out\n\n");
+    printf("\t\t5  -> Log out\n\n");
     printf("\t\tEnter your option here:     ");
     scanf("%d", &opt);
     getchar();
