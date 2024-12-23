@@ -1,1644 +1,1462 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <windows.h>
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 
-typedef struct users {
+#define RESET   "\x1b[0m"
+#define RED     "\x1b[31m"
+#define GREEN   "\x1b[32m"
+#define YELLOW  "\x1b[33m"
+#define BLUE    "\x1b[34m"
+#define MAGENTA "\x1b[35m"
+#define CYAN    "\x1b[36m"
+#define WHITE   "\x1b[37m"
+
+#define MAX_CHARACTERE 50
+#define MAX_DESCRIPTION 500
+#define MAX_STATUS 20
+#define MAX_DATE 12
+
+#define MAX_MOTS 10
+
+    char *priorite_haute[MAX_MOTS] = {
+        "urgent", "immediat", "bloquant", 
+        "important", "panne", 
+        "probleme", "echec", "danger"
+    };
+
+    char *priorite_moyenne[MAX_MOTS] = {
+        "probleme recurrent", "besoin d'aide", "demande de suivi", 
+        "erreur", "incompatibilite", "service lent", 
+        "fonctionnalite manquante", "dysfonctionnement"
+    };
+
+typedef struct {
+    char Nom[MAX_CHARACTERE];
+    char Email[MAX_CHARACTERE]; 
+    char Password[MAX_CHARACTERE];
+    int  Role;
+}Utilisateurs;
+
+typedef struct 
+{
     int id;
-    char password[15];
-    char role[15];
-    struct users *next;
-} users;
+    char Motif[MAX_CHARACTERE];
+    char Description[MAX_DESCRIPTION];
+    int priorite;
+    char Categorie[MAX_CHARACTERE];
+    char Note[MAX_CHARACTERE];
+    char Status[MAX_STATUS];
+    char date[MAX_DATE];  
+    int id_client; 
+    time_t heure_de_debut;
+    int differance;
+   
+}Reclamation;
+
+Utilisateurs *user = NULL;
+Reclamation *rec = NULL;
+
+int Taille = 0;
+int R_Taille = 0;
+int index_user = -1;
+
+int Incription();
+int Connexion();
+
+// Les Menu (Admin / Client / Agent)
+int Choix(int *choix);
+int Choix_Admin(int *choix);
+int Choix_Agent(int *choix);
+
+// Les Fonction de Reclamation
+void Afficher_tout_les_Reclamation();
+void Afficher_Reclamation();
+int Ajouter_un_Reclamation();
+int Modifier_un_Reclamation();
+int Supprimer_un_Reclamation();
+int verifier_duree(time_t heure_de_debut);
+
+// Les Fonction de L'admin et L'agent
+int Modifier_Role_Utilisateur();
+int Modifier_Status_Utilisateur();
+
+// Recherhce -------- 
+void Rechercher_Reclamation();
+
+// Rapport et Statistiqueq
+void Statistiques_Rapport();
+
+// Sauvgarder des donnee
+int Enregistrement();
+
+// Recuperation des donnee
+void Recuperation();
+
+int main(){
+
+    printf("\n\t\t\t\t\t\t   \x1b[35m========================================\x1b[0m");
+    printf("\n\t\t\t\t\t\t   \x1b[35m||      BIENVENU A L'APPLICATION      ||\x1b[0m\n");
+    printf("\t\t\t\t\t\t   \x1b[35m========================================\x1b[0m\n");
+
+    int auth = -1 , choix = 0  , r_choix = 0 , choix_admin = 0 , choix_agent = 0 , quitter = -1;
 
 
-
-typedef struct complains {
-    int id;
-    char motive[100];
-    int priority;
-    char description[500];
-    char category[15];
-    char status[10];
-    char date[30];
-    char note[100];
-    int id_usr;
-    time_t creation_time; // you know where to use it
-    time_t modification_time;
-    double  delai_time; // you know where to use it
-
-    struct complains *next;
-} complains;
+    user = malloc(Taille*sizeof(Utilisateurs));
+    rec = malloc(R_Taille*sizeof(Reclamation));
 
 
+    Recuperation();
 
-/*
-void func_create_node_only(users **head) {
+    while(quitter != 0){
 
-    // alocate memory for the new node.
-    users *tmp = (users *)malloc(sizeof(users));
-    if (!tmp) {
-        printf("Memory allocation for the new node has failed!");
-        return;
-    }
-    // initializing elements of the node.
-    tmp->id = 0;
-    tmp->password[0] = '\0';  // Properly initialize strings
-    tmp->role[0] = '\0'; 
-    tmp->next = NULL;
-    
-    // tmp->id = 0;
-    // //strcpy(tmp->password, "");
-    // strcpy(tmp->role, "");
-    // tmp->next = NULL;
+        int connect = 0;
 
-    if (*head != NULL) {   //if head is NULL, it is an empty list
-        // check if there are nodes in the list
-        // we need a ptr to traverse the list
-        users *t = NULL;
-        t = *head;
-        while (t->next != NULL) {
-            t = t->next;
-        }
-        t->next = tmp;
-    } else {//if head is NULL, it is an empty list
-        //Assigning the newly made node to head
-        *head = tmp;
-    }
-    return;
-}
-*/
+        do{
+        // Authentification ---------------------- 
+            printf("\n"
+               "\t\t\t\t\t\t==============================================\n\t "
+               "\t\t\t\t\t||             \033[36m AUTHENTIFICATION \033[0m           ||\n"
+               "\t\t\t\t\t\t==============================================\n\t "
+               "\t\t\t\t\t||                                          ||\n\t "
+               "\t\t\t\t\t||            [1] INSCRIPTION               ||\n\t "
+               "\t\t\t\t\t||            [2] CONNEXION                 ||\n\t "
+               "\t\t\t\t\t||            [\033[33m0\033[0m] \033[33mQUITTER\033[0m                   ||\n"
+               "\t\t\t\t\t\t||                                          ||\n"
+               "\t\t\t\t\t\t==============================================\n\t "
+               "\n\t\t\t\t\t\t Tapez votre choix => : ");
+            scanf("%d" , &auth);
+            while(getchar()  != '\n'); 
 
-int func_id_check(users *p, int id_value_entered) {
-    while (p->next != NULL) {
-        if (p->id == id_value_entered) return 1;
-        p = p->next;
-    }
-    return p->id == id_value_entered? 1: -1;
-}
-
-
-
-int func_pass_check(char pass[]) {
-
-    int len;
-    int lower_case;
-    int upper_case;
-    int num;
-    int special_char;
-
-    lower_case = 0;
-    upper_case = 0;
-    num = 0;
-    special_char = 0;
-
-    for (len = 0; pass[len] != '\0'; len++) {
-        if (pass[len] >= 65 && pass[len] <= 90) {//uppercase
-            upper_case = 1;
-            continue;
-        } else if (pass[len] >= 97 && pass[len] <=  122) {//lowercase
-            lower_case = 1;
-            continue;
-        } else if (pass[len] >= 48 && pass[len] <=  57) {//num
-            num = 1;
-            continue;
-        } else if ((pass[len] >= 32 && pass[len] <= 47) || (pass[len] >= 58 && pass[len] <= 64) || (pass[len] >= 91 && pass[len] <= 96) || (pass[len] >= 123 && pass[len] <= 126)) {//special char
-            special_char = 1;
-            continue;
-        }
-    }
-    if ((len >= 8) && (lower_case == 1) && (upper_case == 1) && (num == 1) && (special_char == 1)) return 1;
-    return -1;
-}
-
-
-int func_is_first_node(users *p) {
-
-    int size;
-
-    size = 1;
-    while (p->next != NULL) {
-        size++;
-        p = p->next;
-    }
-    return size;
-}
-
-
-void func_assign_val_to_nodes(users **p, int idd, char pass[], char rol[]) {// func_create_assign_val_to_nodes
-
-    // Memory allocation for the new node/user.
-    users *ptr = (users *)malloc(sizeof(users));
-    if (!ptr) {
-        printf("Memory allocation for the new node has failed!");
-        return;
-    }
-
-
-    // node elements initialization with the given data
-    ptr->id = idd;
-    strcpy(ptr->password, pass);
-    strcpy(ptr->role, rol);
-    ptr->next = NULL;
-
-    if (*p != NULL) {
-        users *t;// a pointer to traverse the linked list. in case there are more than one node in the list
-        t = *p;
-        while (t->next != NULL) {
-            t = t->next;
-        }
-        t->next = ptr;
-
-    } else {// In case there is no node in the list 
-        *p = ptr;
-    }
-}
-
-
-int func_pass_check_exist(users *p, char pass[]) {
-
-    while (p->next != NULL) {
-        if (0 == strcmp(p->password, pass)) return 1; // strcmp retuns 0 on match
-        p = p->next;
-    }
-
-    // In case there is one node in the linked list.
-    return strcmp(p->password, pass) == 0? 1: -1;
-}
-
-
-void func_display_users(users *head) {
-
-    //if (head != NULL) { //the linked list in not empty
-        users *p = head;
-        while (p != NULL) {// why not p->next != NULL
-            printf("\n\n%d\n\n", p->id);
-            printf("\n\n%s\n\n", p->password);
-            printf("\n\n%s\n\n", p->role);
-            p = p->next;
-        }
-//} else {
-
-  //  }
-}
-
-int func_role_checker(users *pt, int id_box) {
-    
-    while (pt != NULL) {
-        if (pt->id == id_box) {
-            if (strcmp(pt->role, "admin") == 0) return 0;
-            else if (strcmp(pt->role, "agent") == 0) return 1;
-            else return 2; //normal user == client.
-        }
-        pt = pt->next;
-    }
-    return -1;//to avoid errors we must retun an int any way
-}
-
-void func_manag_users_roles(users *p_head) {
-
-    //Print users list
-    users *traverse_ptr = p_head;
-    int i = 0;
-    int search_id = 0;
-    int exist = 0;//this responsible for printing id is not found
-    while (traverse_ptr != NULL) {
-        printf("\n\t\tUser  %d: %d\n\n", ++i, traverse_ptr->id);
-        traverse_ptr = traverse_ptr->next;
-    }
-
-    traverse_ptr = p_head;// to gert back to the first node
-    printf("\n\n\n\t\tPlease enter a user id to switch the role to agent: ");
-    scanf("%d", &search_id);
-    getchar();
-    printf("\n");
-
-    if (search_id != 0) {
-        while (traverse_ptr != NULL) {
-            if (traverse_ptr->id == search_id) {
-                strcpy(traverse_ptr->role, "agent");
-                printf("\t\tThe user with id %d is now %s\n\n", traverse_ptr->id, traverse_ptr->role);
-                exist = 1;
+        switch (auth)
+        {
+            case 1 :
+                int valid_inscr = Incription();
+                if(valid_inscr){
+                    printf("\n\t\t\t\t\t\t  \x1b[32m--- Inscription Reussite ---\x1b[0m\n");
+                    index_user = Taille;
+                    Taille++;
+                    connect = 1;
+                    auth = 0;
+                } else printf("\n\t\t\t\t\t\t  \x1b[31m--- Inscription Invalid ---\x1b[0m \n");
                 break;
+            case 2 :
+                int index = Connexion();
+                if(index >= 0){
+                    printf("\n\t\t\t\t\t\t  \x1b[32m--- Connexion Reussite ---\x1b[0m\n");
+                    index_user = index;
+                    connect = 1;
+                    auth = 0;
+                } 
+                else {
+                    printf("\n\t\t\t\t\t\t  \x1b[31m Patientez 10 secondes avant de RessaYer ... \x1b[0m \n");
+                    sleep(10000);
+                } 
+                break;
+            case 0 :
+                printf("\n\n\t\t\t\t\t\t  \x1b[31m ******** AU REVOIRE **********  \x1b[0m \n\n\n");
+                auth = 0;
+                quitter = 0;
+                Enregistrement();
+                break;
+        
+        default:
+
+            break;
+
+        }
+    
+    }while(auth != 0);
+
+    if(connect && user[index_user].Role == 0){
+        while(1){
+
+        int valid_choix = Choix(&r_choix);
+
+        if (valid_choix == 0 || r_choix < 1 || r_choix > 5){
+            printf("\n\t\t\t\t\t\t  \x1b[31m---- Choix Invalid ----\x1b[0m \n");
+        }else {
+
+             switch (r_choix){
+
+                case 1:
+                    int valid_Ajoute = Ajouter_un_Reclamation();
+                    if(valid_Ajoute){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- Reclamation a ete Ajoute avec Succes ----\x1b[0m \n");
+                        R_Taille++;
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur d'ajoutr ----\x1b[0m \n");
+                    }
+                break;
+                case 2:
+                    Afficher_Reclamation();
+                    break;
+                case 3 :
+                    int valid_mod = Modifier_un_Reclamation();
+                    if(valid_mod){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- La Reclamation a ete Modifiier avec Succes ----\x1b[0m \n");
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Modification ----\x1b[0m \n");
+                    }
+                    break;
+                case 4 :
+                    int valid_sup = Supprimer_un_Reclamation();
+                    if(valid_sup == 1){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- La Reclamation a ete Supprimer avec Succes ----\x1b[0m \n");
+                    }else if(valid_sup == 2){
+                        printf("\n\t\t\t\t\t\t  \x1b[33m--- Aucun Recalamtion a Supprimer --- \x1b[0m\n");
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Suppression ----\x1b[0m \n");
+                    }
+                    break;
+                case 5 :
+                    auth = -1;
+                    break;
+                
+                default:
+                    break;
             }
-            traverse_ptr = traverse_ptr->next;
+        }
+
+        if(auth != 0) break;
+    
+        }
+
+    }else if(connect && user[index_user].Role == 2){
+
+        while(1){
+
+        int valid_choix = Choix_Agent(&choix_agent);
+
+        if (valid_choix == 0 || choix_agent < 1 || choix_agent > 7){
+            printf("\n\t\t\t\t\t\t  \x1b[31m---- Choix Invalid ----\x1b[0m \n");
+        }else{
+
+             switch (choix_agent){
+
+                case 1:
+                    int valid_Ajoute = Ajouter_un_Reclamation();
+                    if(valid_Ajoute){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- Le Contact a ete Ajoute avec Succes ----\x1b[0m \n");
+                        R_Taille++;
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur d'ajoutr ----\x1b[0m \n");
+                    }
+                break;
+                case 2:
+                    Afficher_tout_les_Reclamation();
+                    break;
+                case 3 :
+                    int valid_mod = Modifier_un_Reclamation();
+                    if(valid_mod){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- La Reclamation a ete Modifiier avec Succes ----\x1b[0m \n");
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Modification ----\x1b[0m \n");
+                    }
+                    break;
+                case 4 :
+                    int valid_sup = Supprimer_un_Reclamation();
+                    if(valid_sup == 1){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- La Reclamation a ete Supprimer avec Succes ----\x1b[0m \n");
+                    }else if(valid_sup == 2){
+                        printf("\n\t\t\t\t\t\t  \x1b[33m--- Aucun Recalamtion a Supprimer --- \x1b[0m\n");
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Suppression ----\x1b[0m \n");
+                    }
+                    break;
+                case 5 :
+                    Rechercher_Reclamation();
+                    break;
+                case 6 :
+                        int valid_status = Modifier_Status_Utilisateur();
+                         if(valid_status){
+                            printf("\n\t\t\t\t\t\t  \x1b[32m--- Le Status de Reclamation a ete modifier avec succes ----\x1b[0m \n");
+                        }else{
+                            printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Modification de Recalamtion ----\x1b[0m \n");
+                    }
+                    break;
+                case 7 :
+                    auth = -1;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if(auth != 0) break;
+    
+        }
+    }else if(connect && user[index_user].Role == 1){
+         while(1){
+
+        int valid_choix = Choix_Admin(&choix_admin);
+
+        if (valid_choix == 0 || choix_admin < 1 || choix_admin > 13){
+            printf("\n\t\t\t\t\t\t  \x1b[31m---- Choix Invalid ----\x1b[0m \n");
+        }else{
+
+             switch (choix_admin){
+
+                case 1:
+                    int valid_Ajoute = Ajouter_un_Reclamation();
+                    if(valid_Ajoute){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- Le Contact a ete Ajoute avec Succes ----\x1b[0m \n");
+                        R_Taille++;
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur d'ajoutr ----\x1b[0m \n");
+                    }
+                break;
+                case 2:
+
+                    Afficher_tout_les_Reclamation();
+                    break;
+                case 3 :
+                    int valid_mod = Modifier_un_Reclamation();
+                    if(valid_mod){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- La Reclamation a ete Modifiier avec Succes ----\x1b[0m \n");
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Modification ----\x1b[0m \n");
+                    }
+                    break;
+                case 4 :
+                    int valid_sup = Supprimer_un_Reclamation();
+                    if(valid_sup == 1){
+                        printf("\n\t\t\t\t\t\t  \x1b[32m--- La Reclamation a ete Supprimer avec Succes ----\x1b[0m \n");
+                    }else if(valid_sup == 2){
+                        printf("\n\t\t\t\t\t\t  \x1b[33m--- Aucun Recalamtion a Supprimer --- \x1b[0m\n");
+                    }else{
+                        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Suppression ----\x1b[0m \n");
+                    }
+                    break;
+                case 5 :
+                        Rechercher_Reclamation();
+                    break;
+                case 6 :
+                        int valid_role = Modifier_Role_Utilisateur();
+                         if(valid_role){
+                            printf("\n\t\t\t\t\t\t  \x1b[32m--- Le Role D'utilisateur a ete modifier avec succes ----\x1b[0m \n");
+                        }else{
+                            printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Modification de role ----\x1b[0m \n");
+                    }
+                    break;
+                case 7 :
+                        int valid_status = Modifier_Status_Utilisateur();
+                         if(valid_status){
+                            printf("\n\t\t\t\t\t\t  \x1b[32m--- Le Status de Reclamation a ete modifier avec succes ----\x1b[0m \n");
+                        }else{
+                            printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur lors de Modification de Recalamtion ----\x1b[0m \n");
+                    }
+                    break;
+                case 8 :
+                    Statistiques_Rapport();
+                    break;
+                case 9 :
+                    auth = -1;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if(auth != 0) break;
+    
         }
     }
-
-    if (search_id != 0 && exist == 0) {
-        printf("\t\tId is not Found.\n\n\n\n");
-    }
 }
-
-void func_add_complains(complains **p, int id_box) {
-
-
-    //char moti[100]; no need for now
-    time_t now;
-
-    // Memory allocation for the new node/complain.
-    complains *ptr = (complains *)malloc(sizeof(complains));
-
-    if (!ptr) {
-        printf("Memory allocation for the new node has failed!");// Handle in the callign func
-        return;
-    }
-
-    // <<<<<<<<<<<<<<<<<node elements initialization by default>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-     // Seed the random number generator with the current time
-    srand(time(0));
-
-    // Generate a random ID between 1000 and 99999 (5-digit ID)
-    int complaintID = rand() % 90000 + 10000;
-
- 
-    ptr->id = complaintID;//*************************************************************** */
-  
-    //printf("\n\n1- ID Please:     %d\n", ptr->id); 
-    
-    strcpy(ptr->status, "waiting");
-    
-    //printf("\n\n2- Status Please:     %s\n",ptr->status);
-
-    strcpy(ptr->note, "no note for the moment");
-    
-    //printf("\n\n3- NOTE Please:     %s\n",ptr->note); 
-
-    struct tm *local;
-    time(&now); // Get the current time
-    local = localtime(&now); // Convert to local time
-
-    ptr->creation_time = time(NULL);
-
-    //printf("\n\n\n\n\n\n ---------------->  \n\n", ptr->creation_time);
-
-    strftime(ptr->date, sizeof(ptr->date), "%d-%m-%Y %H:%M:%S", local);
-
-    //printf("\n\n4- DATE: Please:     %s\n", ptr->date);
-
-    printf("\n\n\t\tPlease enter the complain motive:   ");
-    scanf(" %[^\n]s", ptr->motive);// maby produce qn error
-    getchar();
-    printf("\n");
-    //printf("\n\n5- MOTIVEP lease:     %s\n",ptr->motive); 
-
-    printf("\n\n\t\tPlease enter the complain category:   ");
-    scanf("%[^\n]s", ptr->category);
-    getchar();
-    printf("\n");
-    
-    //printf("\n\n6- CATEGORY Please:     %s\n",ptr->category); 
-
-    ptr->id_usr = id_box;
-
-    //printf("\n\n7- id user Please:     %d\n", ptr->id_usr ); 
-    //printf("\n");
-
-    // add the description 
-    
-    printf("\n\n\t\tPlease enter the complain description:   ");
-    scanf("%[^\n]s", ptr->description);
-    getchar();
-    printf("\n\n");
-    //printf("\n\n8- description  Please:     %s\n",ptr->description);
-
-    ptr->next = NULL;
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<, ask thye user to enter data
-
-
-    if (*p != NULL) {
-        complains *t; // a pointer to traverse the linked list. in case there are more than one node in the list
-        t = *p;
-        while (t->next != NULL) {
-            t = t->next;
-        }
-        t->next = ptr;
-
-    } else {// In case there is no node in the list 
-        *p = ptr;
-    }
-}
-
-
-/*typedef struct complains {
-    int id;
-    char motive[100];
-    int priority;
-    char description[500];
-    char category[15];
-    char status[10];
-    char date[30];
-    char note[100];
-    int id_usr;
-    struct complains *next;
-} complains;
-*/
-
-void func_display_complains(complains *ptr) {// I have to make the output more cleaner.
-
-    //complains *p;
-
-
-    printf("\n\n\n\n\t\tAll complains are list bellow\n\n");
-    while (ptr != NULL) {
-        printf("\t\t\tDate          ->   %s\n", ptr->date);
-        printf("\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
-        printf("\n\t\t\tComplain ID ->   %d\n", ptr->id);
-        printf("\t\t\tMotive        ->   %s\n", ptr->note);
-        printf("\n\t\t\tDescription ->   %s\n", ptr->description);
-
-        if (ptr->status == 0) {
-            printf("\n\t\t\tPriority    ->   High\n");
-            } else if (*ptr->status == 1) { /*
-            /tmp/J3hiSXCGQj.c:387:33: warning: comparison between pointer and integer
-  387 |             else if (pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
-|   
-            */
-                printf("\n\t\t\tPriority    ->   Medium\n");
-            } else {
-                printf("\n\t\t\tPriority    ->   Low\n");
-        }
-        printf("\t\t\tStatus        ->   %s\n", ptr->status);
-        printf("\t\t\tCategory      ->   %s\n", ptr->category);
-        printf("\t\t\tNote          ->   %s\n", ptr->note);
-        printf("\n\n\n");
-        ptr = ptr->next;
-    }
-    printf("\n\n");
-}
-
-
-int func_id_found(complains* pt, int i) {
-    while (pt) {
-        if (pt->id == i) return 1;
-        pt = pt->next;
-    }
+    // Libération de la mémoire allouée
+    free(user);   
+    free(rec);   
     return 0;
 }
 
+// Les Menu D'application ------------------------------------------------------------------------
 
-void func_modify_complains(complains *pt) {
-    // print enter compla id 
-    int i;
-    int found;
-    printf("\n\t\tPlease Enter a complain id: ");
-    scanf("%d", &i);
-    getchar();
+int Choix(int *choix){
+    int ch;
+        printf("\n");
+        printf(CYAN "\t\t\t\t\t\t=========================================================\n\t " RESET);
+        printf( "\t\t\t\t\t\033[36m||\033[0m                  \x1b[32m Espace Client \033[0m                    \033[36m||\033[0m \n" );
+        printf(CYAN "\t\t\t\t\t\t=========================================================\n\t " RESET);
+        printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+        printf( "\t\t\t\t\t\033[36m||\033[0m         \x1b[33m[1] Ajouter un Reclamation \x1b[0m                 \033[36m||\033[0m\n\t " );
+        printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+        printf( "\t\t\t\t\t\033[36m||\033[0m         \x1b[33m[2] Afficher la list des Reclamation\x1b[0m        \033[36m||\033[0m\n\t " );
+        printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+        printf( "\t\t\t\t\t\033[36m||\033[0m         \x1b[33m[3] Modifier un Reclamation \x1b[0m                \033[36m||\033[0m\n\t " );
+        printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+        printf( "\t\t\t\t\t\033[36m||\033[0m         \x1b[33m[4] Supprimer un Reclamation  \x1b[0m              \033[36m||\033[0m\n\t " );
+        printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+        printf( "\t\t\t\t\t\033[36m||\033[0m         \x1b[31m[5] Deconnecter \x1b[0m                            \033[36m||\033[0m\n");
+        printf( "\t\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n");
+        printf(CYAN "\t\t\t\t\t\t=========================================================\n\t " RESET);
+        printf("\n\t\t\t\t\t\t Tapez votre choix => : ");
+               ch = scanf("%d", choix);
+               while(getchar() != '\n');
+               if(ch) return ch;
+               else return 0;
+}
+
+int Choix_Agent(int *choix){
+            int ch;
+             printf("\n");
+            printf(CYAN "\t\t\t\t\t\t=========================================================\n\t " RESET);
+            printf( "\t\t\t\t\t\033[36m||\033[0m            \x1b[32m Espace D'Agent de Reclamation \033[0m          \033[36m||\033[0m \n" );
+            printf(CYAN "\t\t\t\t\t\t=========================================================\n\t " RESET);
+            printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+            printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[1] Ajouter un Reclamation \x1b[0m                   \033[36m||\033[0m\n\t " );
+            printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+            printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[2] Afficher la list des Reclamation\x1b[0m          \033[36m||\033[0m\n\t " );
+            printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+            printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[3] Modifier un Reclamation \x1b[0m                  \033[36m||\033[0m\n\t " );
+            printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+            printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[4] Supprimer un Reclamation  \x1b[0m                \033[36m||\033[0m\n\t " );
+            printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+            printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[5] Recherhcer Reclamation  \x1b[0m                  \033[36m||\033[0m\n\t " );
+            printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+            printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[6] Modifier Le Status d'une Reclamation \x1b[0m     \033[36m||\033[0m\n\t " );
+            printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+            printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[31m[7] Deconnecter \x1b[0m                              \033[36m||\033[0m\n");
+            printf( "\t\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n");
+            printf(CYAN "\t\t\t\t\t\t=========================================================\n\t " RESET);
+            printf("\n\t\t\t\t\t\t Tapez votre choix => : ");
+            ch = scanf("%d", choix);
+            while(getchar() != '\n');
+            if(ch) return ch;
+            else return 0;
+}
+
+int Choix_Admin(int *choix){
+
     printf("\n");
-    found = 0;
+    printf(CYAN "\t\t\t\t\t\t=========================================================\n\t " RESET);
+    printf( "\t\t\t\t\t\033[36m||\033[0m              \x1b[32m Espace Administrateur \033[0m                \033[36m||\033[0m \n\t     " );
+    printf(CYAN "\t\t\t\t\t=========================================================\n\t " RESET);
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[1] Ajouter un Reclamation \x1b[0m                   \033[36m||\033[0m\n\t " );
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[2] Afficher la list des Reclamation\x1b[0m          \033[36m||\033[0m\n\t " );
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[3] Modifier un Reclamation \x1b[0m                  \033[36m||\033[0m\n\t " );
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[4] Supprimer un Reclamation  \x1b[0m                \033[36m||\033[0m\n\t " );
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[5] Rechercher un Reclamation  \x1b[0m               \033[36m||\033[0m\n\t " );
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[6] Modifier Le Role d'un Utilisateur \x1b[0m        \033[36m||\033[0m\n\t " );
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[7] Modifier Le Status d'une Reclamation \x1b[0m     \033[36m||\033[0m\n\t " );
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[33m[8] Statistiques et Rapports \x1b[0m                 \033[36m||\033[0m\n\t " );
+    printf( "\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n\t ");
+    printf( "\t\t\t\t\t\033[36m||\033[0m       \x1b[31m[9] Deconnecter \x1b[0m                              \033[36m||\033[0m\n");
+    printf( "\t\t\t\t\t\t\033[36m||\033[0m                                                     \033[36m||\033[0m\n");
+    printf(CYAN "\t\t\t\t\t\t=========================================================\n\t " RESET);
+    printf("\n\t\t\t\t\t\t Tapez votre choix => : ");
 
-    while (pt) {
-        if (pt->id == i) {
-            
-            
-            // print the original
-            printf("\t\t\tDate          ->   %s\n", pt->date);
-            printf("\n\t\t\tUser ID     ->   %d\n", pt->id_usr);
-            printf("\n\t\t\tComplain ID ->   %d\n", pt->id);
-            printf("\t\t\tMotive        ->   %s\n", pt->note);
-            printf("\n\t\t\tDescription ->   %s\n", pt->description);
-            if (pt->status == 0) printf("\n\t\t\tPriority    ->   High\n");
-            else if (*pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
-            else {
-                printf("\n\t\t\tPriority    ->   Low\n");
-                }
-            printf("\t\t\tStatus        ->   %s\n", pt->status);
-            printf("\t\t\tCategory      ->   %s\n", pt->category);
-            printf("\t\t\tNote          ->   %s\n", pt->note);
-            printf("\n\n\n");
+    int chx = scanf("%d" , choix);
+    while(getchar() != '\n');
 
-            // Now ask for the  output
-
-            printf("\n\t\tPlease Enter a  Motive: ");
-            scanf("%[^\n]", pt->motive);
-            getchar();
-            printf("\n");
-            printf("\n\t\tPlease Enter a  Description: : ");
-            scanf("%[^\n]", pt->description);
-            getchar();
-            printf("\n");
-            printf("\n\t\tPlease Enter a  category: ");
-            scanf("%[^\n]", pt->category);
-            getchar();
-            printf("\n");
-   /*         printf("\n\t\tPlease Enter a  status: ");
-            scanf("%[^\n]", pt->status);
-            getchar();
-            printf("\n");*/
-            found = 1;
-            break;
-        }
-        pt = pt->next;
-    }
-    if (!found) {
-        printf("\n\n\n\t\tComplain is not found\n\n\n\n");
-    }
-    // check if it exixt
-        // if exists 
-            // afiicher 
-            // print enter motiv, des, cate
-            // print all good
-        // if not 
-            //print makaynash
-            // go back
-
+    return chx;
 
 }
 
+// Authentification ------------------------------------------------------------------------
 
-
-void func_delete_complains(complains **head) {
-
-    // How to delete
-    complains* current = *head;
-    complains* previous = *head;
-    complains* tmp = *head;
-    int id;
-    int position = 0;
-    int f = 0;
-
-    printf("\n\t\tPlease Enter a complain id: ");
-    scanf("%d", &id);
-    getchar();
-
-    while (tmp) {
-        position++;
-        if (tmp->id == id) {
-            f = 1;
-            break;
-            }
-        tmp = tmp->next;
-    }
-    if (f == 0) {
-         printf("\n\t\tThere are no complains with that id!\n\n\n\n");
-         return;
-    }
-
-    if (*head == NULL) {
-        printf("\n\tThere are no complains yet!\n");
-        return;
-    } else if (position == 1 ) {
-        *head = current->next;
-        free(current);
-        current = NULL;
-        return;
-    } else {
-        while (position != 1) {
-            previous = current;
-            current = current->next;
-            position--;
-        }
-
-        previous->next = current->next;
-        free(current);
-        current = NULL;
-        
-    }
-        
-}
-
-
-void    func_search_complains_by_user_id(complains *p1) {
-
-    int id;
-    int found = 0;
-    printf("\n\t\tPlease Enter a user id: ");
-    scanf("%d", &id);
-    getchar();
-
-    while (p1) {
-        if (p1->id_usr == id) {
-            found = 1;
-            printf("\nThe complain with the user id  %d is found\n", id);
-            printf("\n\t\tComplain Id -> %d\n", p1->id);
-            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\t\tPriority -> High\n");
-            printf("\n\t\tDescription -> %s\n", p1->description);
-            printf("\n\t\tCategory -> %s\n", p1->category);
-            printf("\n\t\tStatus -> %s\n", p1->status);
-            printf("\n\t\tDate -> %s\n", p1->date);
-            printf("\n\t\tNote -> %s\n", p1->note);
-            printf("\n\n\n");
-            }
-        
-        p1 = p1->next;
-
-    }  
-    if (found == 0) {
-        printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
-    }
-}
-
-void    func_search_complains_by_complain_id(complains *p1) {
-
-    int id;
-    int found = 0;
-    printf("\n\t\tPlease Enter a complain id: ");
-    scanf("%d", &id);
-    getchar();
-
-    while (p1) {
-        if (p1->id == id) {
-            found = 1;
-            printf("\tThe complain with the id  %d is found\n", id);
-            printf("\n\t\tComplain Id -> %d\n", p1->id);
-            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\t\tPriority -> High\n");
-            printf("\n\t\tDescription -> %s\n", p1->description);
-            printf("\n\t\tCategory -> %s\n", p1->category);
-            printf("\n\t\tStatus -> %s\n", p1->status);
-            printf("\n\t\tDate -> %s\n", p1->date);
-            printf("\n\t\tNote -> %s\n", p1->note);
-            printf("\n\n\n\n");  
-            return;
-            }
-        p1 = p1->next;
-    }
-    if (found == 0) printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
-        // print enter compla id 
-
-        // check if it exixt
-        // if exists 
-            // display it
-
-        //if it doest 
-            // comp id is not fount please try again
-            //return
-}
-
-
-
-void func_sort_complains(complains *ptr_hd) {
-
-    complains *p;
-
-    p = ptr_hd;
-    while (p != NULL) {
-        if (strstr(p->description, "urgent") != NULL) {
-            p->priority = 0;// High priority.
-        } else if (strstr(p->description, "important") != NULL) {
-            p->priority = 1;// Meduim priority.
-        }else /*if (strstr(p->description, "normal") != NULL)*/ {
-            p->priority = 2;// low priority.
-        }
-        p = p->next;
-    }
-}
-
-void func_display_complains_by_priority(complains* ptr_complains) {
-    
-    complains *p1, *p2, *p3;// To traverse for all the 3 priorities.
-
-    func_sort_complains(ptr_complains);
-
-
-    p1 = ptr_complains;
-    p2 = ptr_complains;
-    p3 = ptr_complains;
-
-
-    printf("\n\n\n\tThe complains with the highest priority: \n\n");
-    while (p1 != NULL) {
-        if (p1->priority == 0) {
-            printf("\n\t\tComplain Id     -> %d\n", p1->id);
-            printf("\n\t\tUser Id         -> %d\n", p1->id_usr);
-            printf("\n\t\tPriority        -> High\n");
-            printf("\n\t\tDescription     -> %s\n", p1->description);
-            printf("\n\t\tCategory        -> %s\n", p1->category);
-            printf("\n\t\tStatus          -> %s\n", p1->status);
-            printf("\n\t\tDate            -> %s\n", p1->date);
-            printf("\n\t\tNote            -> %s\n", p1->note);
-            printf("\n\n\n\n");
-        }
-        p1 = p1->next;
-    }
-
-    printf("\n\n\n\tThe complains with a medium priority: \n\n");
-    while (p2 != NULL) {
-        if (p2->priority == 1) {
-            printf("\n\t\tComplain Id     -> %d\n", p2->id);
-            printf("\n\t\tUser Id         -> %d\n", p2->id_usr);
-            printf("\n\t\tPriority        -> Medium\n");
-            printf("\n\t\tDescription     -> %s\n", p2->description);
-            printf("\n\t\tCategory        -> %s\n", p2->category);
-            printf("\n\t\tStatus          -> %s\n", p2->status);
-            printf("\n\t\tDate            -> %s\n", p2->date);
-            printf("\n\t\tNote            -> %s\n", p2->note);
-            printf("\n\n\n\n");
-        }
-        p2 = p2->next;
-    }
-
-
-    printf("\n\n\n\tThe complains with a low priority: \n\n");
-    while (p3 != NULL) {
-        if (p3->priority == 2) {
-            printf("\n\t\tComplain Id -> %d\n", p3->id);
-            printf("\n\t\tUser Id -> %d\n", p3->id_usr);
-            printf("\n\t\tPriority -> Low\n");
-            printf("\n\t\tDescription -> %s\n", p3->description);
-            printf("\n\t\tCategory -> %s\n", p3->category);
-            printf("\n\t\tStatus -> %s\n", p3->status);
-            printf("\n\t\tDate -> %s\n", p3->date);
-            printf("\n\t\tNote -> %s\n", p3->note);
-            printf("\n\n\n\n");
-        }
-        p3 = p3->next;
-        if (p3 == NULL) {//dont print the following code
-            return;
-        }
-    }
-
-    printf("\n\n\n\n");
-
-}
-
-
-
-
-void func_handle_complains(complains* p) {
+int Incription(){
 
     int i;
-    int opt;
-    time_t now;
+    user = realloc(user , (Taille + 1)*sizeof(Utilisateurs));
 
-    printf("\n\n\t\tPlease Enter a complain id: ");
-    scanf("%d", &i);
-    getchar();
+    if(user == NULL){
+        printf("\n\t\t\t\t\t\t \x1b[31m--- Erreur D'allocation ----\x1b[0m\n");
+        return 0;
+    }
 
-    while (p) {
-        if (p->id == i) {
-        
-            printf("\tPlease chose the status: \n\t1- waiting\n\t2- resolved\n\t3- rejected\n\n");
-
-            scanf("%d", &opt);
-            getchar();
-        
-            switch (opt) {
-                case(1):
-                    strcpy(p->status, "waiting");
-
-                    printf("\t\tPlease enter a note: ");
-                    scanf("%[^\n]s", p->note);
-                    getchar();
-                    printf("\n\n");
-
-                    printf("\t\tStatus has been updated succefully");
-                    printf("\n\n");
+    Utilisateurs user_inscr;
+    printf("\n\t\t\t\t\t\t  \x1b[32m---- Inscription ----\x1b[0m \n");
     
-                    return;
-                case(2):
-
-                    strcpy(p->status, "resolved");
+    // Validation de nom -------
+    int nom_count = 0;
+    while(1){
+        int user_exist = 0;
+        printf("\n\t\t\t\t\t\t  -- Nom d'utilisateur : ");
+        int valide_input = scanf(" %[^\n]s" , user_inscr.Nom);
         
-                    printf("\t\tPlease enter a note: ");
-                    scanf("%[^\n]s", p->note);
-                    getchar();
-                    printf("\n\n");
-
-
-                    printf("\t\tStatus has been updated succefully");
-                    printf("\n\n");
-        
-                    now = time(NULL);
-                    p->delai_time = difftime(now, p->creation_time);
-
-                    return;
-                case(3):
-
-                    strcpy(p->status, "rejected");
-
-                    printf("\t\tPlease enter a note: ");
-                    scanf("%[^\n]s", p->note);
-                    getchar();
-                    printf("\n\n");
-
-
-                    printf("\t\tStatus has been updated succefully");
-                    printf("\n\n");
-                
-                    now = time(NULL);
-                    p->delai_time = difftime(now, p->creation_time);
-
-                    return;
-                default:
-                    printf("\n\t\tPlease enter a valid option");
-                    printf("\n\n\n\n");
-                    return;
-
+        int i = 0 , valid_nom = 1;
+        while(user_inscr.Nom[i] != '\0'){
+            if( (user_inscr.Nom[i] >= 65 && user_inscr.Nom[i] <= 90) || (user_inscr.Nom[i] >= 97 && user_inscr.Nom[i] <= 122)){
+                valid_nom = 1;
+            }else{
+                valid_nom = 0;
+                break;
             }
+            i++;
         }
-        p = p->next;
-    }
-    printf("\n\t\tComplain id is not found, Please try again\n\n\n\n");
-}
 
-
-
-
-void    func_display_number_of_complains(complains *p) {
-
-    complains *tmp = p;
-    int size = 0;
-
-
-    while (tmp) {
-        size++;
-        tmp = tmp->next;
-    }
-    if (size == 0) {
-        printf("\n\n\t\tThere are no complains yet\n\n\n\n");
-        return;
-    }
-
-    printf("\n\n\t\tThe number of complains is:   %d\n\n\n\n", size);
-
-}
-
-double func_add_all_delai_time(complains *h) {
-
-    double sum = 0;
-
-    while (h) {
-
-        if (strcmp(h->status, "waiting") != 0) {
-            sum += h->delai_time;
+        for(int i=0;i<Taille;i++){
+            if(strcmp(user_inscr.Nom , user[i].Nom) == 0) {
+                user_exist = 1;
+                break;
+            } 
         }
-        h = h->next;
-    }
-    return sum;
-}
 
-double func_sum_all_handeled_comp(complains *h) {
 
-    double sum = 0;
 
-    while (h) {
-        if (strcmp(h->status, "resolved") == 0) {
-            sum++;
+        if(valide_input && strlen(user_inscr.Nom) > 3 && valid_nom && user_exist == 0){
+            break;
+        }else if(nom_count > 2){
+            return 0;
+        }else if(user_exist){
+            nom_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[33m-- Le Nom deja exist --\x1b[0m \n");
+        }else{
+            nom_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Nom --\x1b[0m \n");
         }
-        h = h->next;
-    }
-    return sum;
-}
-
-
-void  func_average_delai_time(complains *head) {
-
-    double sum_all_delais = func_add_all_delai_time(head);
-    //printf("\n\t\t        %.2f     \n", sum_all_delais);
-    double sum_all_handeled_comp = func_sum_all_handeled_comp(head);
-    //printf("\n\t\t        %.2f     \n", sum_all_handeled_comp);
-    double avr_del_time = (sum_all_delais/sum_all_handeled_comp);
-    //printf("\n\t\t        %.2f    \n", avr_del_time);
-
-    if (sum_all_delais == 0 || sum_all_handeled_comp == 0) {
-        printf("\n\n\t\tThe average delai Time in seconds is:  0 \n\n\n\n");
-        return;
-    }
-    printf("\n\n\t\tThe average delai Time in seconds is:  %lf \n\n\n\n", avr_del_time);
-}
-
-
-int func_sum_all_comp(complains *h) {
-
-    int size = 0;
-
-    while (h) {
-        size++;
-        h = h->next;
     }
 
-    return size;
-}
+    // Validation d'email -------
+    int email_count = 0; 
+    while(1){
+        printf("\n\t\t\t\t\t\t  -- Email   : ");
+        int valide_input = scanf(" %[^\n]s" , user_inscr.Email);
+        while(getchar() != '\n');
 
+        int valid_email = 1;
+        
+        char *arb = strchr(user_inscr.Email , '@'); 
+        if(arb != NULL){
+            char *point = strchr( arb,'.');
+            if(point != NULL){
+                valid_email = 1;
+            } else {
+                valid_email = 0;
+            }
 
-void    func_rate_of_resolved_complains(complains *h) {
+        }else{
+            valid_email = 0;
+        }
 
-    double sum_all_handeled_comp = func_sum_all_handeled_comp(h);
-       //printf("\n\n\t\t        %d     \n", sum_all_handeled_comp);
-
-    double sum_all_comp = func_sum_all_comp(h);
-        //printf("\n\n\t\t        %d     \n", sum_all_comp);
+        if(valide_input && strlen(user_inscr.Email) > 3 && valid_email){
+            break;
+        }else if(email_count > 2){
+            return 0;
+        }else{
+            email_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Email --\x1b[0m \n");
+        }
+    }
     
-    double rate = ((sum_all_handeled_comp / sum_all_comp) * 100);
+    // Validation de Mot de Pass 
+    while(1){
 
-    if (sum_all_handeled_comp == 0 || sum_all_comp == 0) {// to avoid the -nan value
-        printf("\n\n\t\tThe resolved complains rate is:  0\n\n\n\n");
-        return;
-    }
-    printf("\n\n\t\tThe resolved complains rate is:  %.2f\n\n\n\n", rate);
-}
+        printf("\n\t\t\t\t\t\t  -- Password   : ");
+        int valide_input = scanf(" %[^\n]s" , user_inscr.Password);
+        
+        int i = 0 , maj = 0 , min = 0 , chiffre = 0 , charactere = 0;
+        int valid_password = 0 , existe = 0;
 
-
-void    func_search_complains_by_date(complains *p1) {
-
-    char id[30];
-    int f = 0;
-    printf("\n\t\tPlease Enter a complain creation time: ");
-    scanf("%[^\n]s", id);
-    getchar();
-
-    while (p1) {
-        if ( strcmp(p1->date, id) == 0) {
-            f = 1;
-            printf("\n\tThe complain with the date  %s is found\n", id);
-            printf("\n\t\tComplain Id -> %d\n", p1->id);
-            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\t\tPriority -> High\n");
-            printf("\n\t\tDescription -> %s\n", p1->description);
-            printf("\n\t\tCategory -> %s\n", p1->category);
-            printf("\n\t\tStatus -> %s\n", p1->status);
-            printf("\n\t\tDate -> %s\n", p1->date);
-            printf("\n\t\tNote -> %s\n", p1->note);
-            printf("\n\n\n\n");  
-            return;
-            }
-        p1 = p1->next;
-    }
-
-    if (f == 0) printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
-}
-
-void    func_search_complains_by_status(complains *p1) {
-
-    char id[20];
-    int found = 0;
-    printf("\n\t\tPlease Enter a complain status: ");
-    scanf("%[^\n]s", id);
-    getchar();
-
-    while (p1) {
-        if ( strcmp(p1->status, id) == 0) {
-            found = 1;
-            printf("\n\tThe complain with the status  %s is found\n", id);
-            printf("\n\t\tComplain Id -> %d\n", p1->id);
-            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\t\tPriority -> High\n");
-            printf("\n\t\tDescription -> %s\n", p1->description);
-            printf("\n\t\tCategory -> %s\n", p1->category);
-            printf("\n\t\tStatus -> %s\n", p1->status);
-            printf("\n\t\tDate -> %s\n", p1->date);
-            printf("\n\t\tNote -> %s\n", p1->note);
-            printf("\n\n\n\n");  
-
-            }
-        p1 = p1->next;
-    }
-    if (found == 0) {
-        printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
-    }
-}
-
-void func_search_complains_by_category(complains* p1) {
-    char id[20];
-    int f = 0;
-    printf("\n\n\t\tPlease Enter a complain category: ");
-    scanf("[^\n]s", id);
-    getchar();
-
-    while (p1) {
-        if ( strcmp(p1->category, id) == 0) {
-            f = 1;
-            printf("\n\tThe complain with the category  %s is found\n", id);
-            printf("\n\t\tComplain Id -> %d\n", p1->id);
-            printf("\n\t\tUser Id -> %d\n", p1->id_usr);
-            printf("\n\t\tPriority -> High\n");
-            printf("\n\t\tDescription -> %s\n", p1->description);
-            printf("\n\t\tCategory -> %s\n", p1->category);
-            printf("\n\t\tStatus -> %s\n", p1->status);
-            printf("\n\t\tDate -> %s\n", p1->date);
-            printf("\n\t\tNote -> %s\n", p1->note);
-            printf("\n\n\n\n");  
+        if(strstr(user_inscr.Password , user_inscr.Nom) != NULL){
+            existe = 1;
         }
-        p1 = p1->next;
 
-    }
-    if (f == 0) printf("\n\n\t\tThe complain is not found, please try again.\n\n\n\n");
-}
 
-void    func_agent_menu(users **ptr_head, complains  **ptr_head_complains, int id_box) {
-    int opt;
-
-    opt = 0;
-    while (1) {
-    printf("\t\t\t\tWelcome back agent!\n\n\n");
-    printf("\tPlease Enter a valid number option from the list bellow:\n");
-
-    printf("\t\t1  -> Display complains list.\n");
-    printf("\t\t2  -> Modify a complain.\n");
-    printf("\t\t3  -> Delete a complain.\n");
-    printf("\t\t4  -> Search for a complain by its id.\n");
-    printf("\t\t5  -> Search for a complain by user id.\n");
-    printf("\t\t6  -> Search for a complain by its date.\n");
-    printf("\t\t7  -> Search for complains by status.\n");
-    printf("\t\t8  -> Search for complains by category.\n");
-    //printf("\t\t11 -> Display complains by priority.\n");
-    printf("\t\t9  -> Process a complain\n");
-    printf("\t\t10 -> Display the number of complains.\n");
-    /*printf("\t\t14 -> The Average delai time.\n");
-    printf("\t\t15 -> The rate of resolved complains.\n");
-    printf("\t\t16 -> Raport\n\n");*/
-    printf("\t\t11 -> Log out\n\n");
-    printf("\t\tEnter your option here:     ");
-    scanf("%d", &opt);
-    getchar();
-
-    if (opt == 11) return;
-
-    switch (opt) {
-       case (1):
-            func_display_complains(*ptr_head_complains);
-            break;
-        case (2):
-            func_modify_complains(*ptr_head_complains);
-            break;
-        case (3):
-            func_delete_complains(ptr_head_complains);
-            break;
-        case (4):
-            func_search_complains_by_complain_id(*ptr_head_complains);
-            break;
-        case (5):
-            func_search_complains_by_user_id(*ptr_head_complains);
-            break;
-        case (6):
-            func_search_complains_by_date(*ptr_head_complains);
-            break;
-        case (7):
-            func_search_complains_by_status(*ptr_head_complains);
-            break;
-        case (8):
-            func_search_complains_by_category(*ptr_head_complains);
-            break;
-        case (9):
-            func_handle_complains(*ptr_head_complains);
-            break;
-        case (10):
-            func_display_number_of_complains(*ptr_head_complains);
-            break;
-        case (11):
-            break;
-        default:
-            printf("\t\tPlease enter a valid option number.\n\n");        
+        while(user_inscr.Password[i] != '\0'){
+            if(user_inscr.Password[i] >= 47 && user_inscr.Password[i] <= 57){
+                chiffre = 1;
+            }else if(user_inscr.Password[i] >= 65 && user_inscr.Password[i] <= 90){
+                maj = 1;
+            }else if(user_inscr.Password[i] >= 97 && user_inscr.Password[i] <= 122){
+                min = 1;
+            }else if(user_inscr.Password[i] >= 58 && user_inscr.Password[i] <= 64){
+                charactere = 1;
             }
+            i++;
+        }
+
+        valid_password = maj + min + chiffre + charactere;
+
+        if(valide_input && strlen(user_inscr.Password) > 8 && valid_password >= 4 && existe == 0){
+            break;
+        }else if(nom_count > 2){
+            return 0;
+        }else if(existe){
+            nom_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[33m !!! Le nom ne doit pas etre dans le mot de passe  !!!\x1b[0m \n");  
+        }else{
+            nom_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Password --\x1b[0m \n");
+        }       
+
     }
+    
+    // Role 
+    if(Taille == 0)
+        user_inscr.Role = 1;
+    else 
+        user_inscr.Role = 0;
+
+    user[Taille] = user_inscr; 
+
+    return 1;
 }
 
-void func_generate_raport_file(complains *p) {
+int Connexion(){
 
-    FILE *file_ptr;
-    complains* ptr = p;
-    file_ptr = fopen("raport.txt", "w");
+    char Nom[MAX_CHARACTERE];
+    char Password[MAX_CHARACTERE];
 
-    if (file_ptr == NULL) 
-    {
-        printf("\n\n\nCould not open file\n\n\n"); 
+    // Validation de nom -------
+    int nom_count = 0;
+    while(1){
+        int valid_nom = 0 , valid_password = 0 , index = 0;
+        printf("\n\t\t\t\t\t\t  -- Nom d'utilisateur : ");
+        scanf(" %[^\n]s" , Nom);
+
+        printf("\n\t\t\t\t\t\t  -- Password : ");
+        scanf(" %[^\n]s" , Password);
+
+        for(int i=0;i<Taille;i++){
+            if(strcmp(user[i].Nom , Nom) == 0){
+                valid_nom = 1;
+                if(strcmp(user[i].Password , Password) == 0){
+                    valid_password = 1;
+                    index = i;
+                    break;
+                }
+            }
+        }
+
+        if(valid_nom && valid_password){
+            return index;
+        }else if(nom_count > 2){
+            return -1;
+        }else if(valid_nom == 0 || valid_password == 0) {
+            nom_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[33m-- Nom ou mot de passe incorrect --\x1b[0m \n");
+        }
+    }
+
+}
+
+// Relamation ------------------------------------------------------------------------ 
+
+void Afficher_tout_les_Reclamation(){
+
+    if(rec == NULL || R_Taille  == 0 ){
+        printf("\n\t\t\t\t\t\t  \x1b[31m---- Aucun Reclamation a Afficher ----\x1b[0m\n");
         return; 
     }
 
-    fprintf(file_ptr, "\t\tAll the new complains for today: \n\n");
-    while (ptr) {
-        fprintf(file_ptr, "\t\t\tDate          ->   %s\n", ptr->date);
-        fprintf(file_ptr, "\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
-        fprintf(file_ptr, "\n\t\t\tComplain ID ->   %d\n", ptr->id);
-        fprintf(file_ptr, "\t\t\tMotive        ->   %s\n", ptr->note);
-        fprintf(file_ptr,"\n\t\t\tDescription ->   %s\n", ptr->description);
+    Reclamation reclamation;
 
-        if (ptr->status == 0) {
-            fprintf(file_ptr, "\n\t\t\tPriority    ->   High\n");
-            } else if (*ptr->status == 1) { /*
-            /tmp/J3hiSXCGQj.c:387:33: warning: comparison between pointer and integer
-  387 |             else if (pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
-|   
-            */
-                fprintf(file_ptr, "\n\t\t\tPriority    ->   Medium\n");
-            } else {
-                fprintf(file_ptr, "\n\t\t\tPriority    ->   Low\n");
-        }
-        fprintf(file_ptr, "\t\t\tStatus        ->   %s\n", ptr->status);
-        fprintf(file_ptr, "\t\t\tCategory      ->   %s\n", ptr->category);
-        fprintf(file_ptr, "\t\t\tNote          ->   %s\n", ptr->note);
-        fprintf(file_ptr, "\n\n\n");
-        ptr = ptr->next;
-
-
-    }
-    
-    
-    
-    
-    ptr = p;
-
-    fprintf(file_ptr, "\t\t\nAll the new resolved complains\n\n\n");
-    while (ptr) {
-        if (strcmp(ptr->status, "resolved") == 0){
-        fprintf(file_ptr, "\t\t\tDate          ->   %s\n", ptr->date);
-        fprintf(file_ptr, "\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
-        fprintf(file_ptr, "\n\t\t\tComplain ID ->   %d\n", ptr->id);
-        fprintf(file_ptr, "\t\t\tMotive        ->   %s\n", ptr->note);
-        fprintf(file_ptr,"\n\t\t\tDescription ->   %s\n", ptr->description);
-
-        if (ptr->status == 0) {
-            fprintf(file_ptr, "\n\t\t\tPriority    ->   High\n");
-            } else if (*ptr->status == 1) { /*
-            /tmp/J3hiSXCGQj.c:387:33: warning: comparison between pointer and integer
-  387 |             else if (pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
-|   
-            */
-                fprintf(file_ptr, "\n\t\t\tPriority    ->   Medium\n");
-            } else {
-                fprintf(file_ptr, "\n\t\t\tPriority    ->   Low\n");
-        }
-        fprintf(file_ptr, "\t\t\tStatus        ->   %s\n", ptr->status);
-        fprintf(file_ptr, "\t\t\tCategory      ->   %s\n", ptr->category);
-        fprintf(file_ptr, "\t\t\tNote          ->   %s\n", ptr->note);
-        fprintf(file_ptr, "\n\n\n");
-        }
-        ptr = ptr->next;
-
-
-    }
-
-
-
-
-    fclose(file_ptr);
-
-}
-
-void func_admin_menu(users **ptr_head, complains **ptr_head_complains, int id_box) {
-    int opt;
-
-    opt = 0;
-    while (1) {
-    printf("\t\t\t\tWelcome back admin!\n\n");
-    printf("\tPlease Enter a valid number option from the list bellow:\n");
-    printf("\t\t1  -> Manage users roles.\n");
-    printf("\t\t2  -> add complains.\n");
-    printf("\t\t3  -> Display complains list.\n");
-    printf("\t\t4  -> Modify a complain.\n");
-    printf("\t\t5  -> Delete a complain.\n");
-    printf("\t\t6  -> Search for a complain by its id.\n");
-    printf("\t\t7  -> Search for a complain by user id.\n");
-    printf("\t\t8  -> Search for a complain by its date.\n");
-    printf("\t\t9  -> Search for complains by status.\n");
-    printf("\t\t10 -> Search for complains by category.\n");
-    printf("\t\t11 -> Display complains by priority.\n");
-    printf("\t\t12 -> Process a complain\n");
-    printf("\t\t13 -> Display the number of complains.\n");
-    printf("\t\t14 -> The Average delai time.\n");
-    printf("\t\t15 -> The rate of resolved complains.\n");
-    printf("\t\t16 -> Raport\n\n");
-    printf("\t\t17 -> Log out\n\n");
-    printf("\t\tEnter your option here:     ");
-    scanf("%d", &opt);
-    getchar();
-
-    if (opt == 17) return;
-
-    switch (opt) {
-        case (1):
-            func_manag_users_roles(*ptr_head);
-            break;
-        case (2):
-            func_add_complains(ptr_head_complains, id_box);
-            break;
-       case (3):
-            func_display_complains(*ptr_head_complains);
-            break;
-        case (4):
-            func_modify_complains(*ptr_head_complains);
-            break;
-        case (5):
-            func_delete_complains(ptr_head_complains);
-            break;
-        case (6):
-            func_search_complains_by_complain_id(*ptr_head_complains);
-            break;
-        case (7):
-            func_search_complains_by_user_id(*ptr_head_complains);
-            break;
-        case (8):
-            func_search_complains_by_date(*ptr_head_complains);
-            break;
-        case (9):
-            func_search_complains_by_status(*ptr_head_complains);
-            break;
-        case (10):
-            func_search_complains_by_category(*ptr_head_complains);
-            break;
-        case (11):
-            func_display_complains_by_priority(*ptr_head_complains);
-            break;
-        case (12):
-            func_handle_complains(*ptr_head_complains);
-            break;
-        case (13):
-            func_display_number_of_complains(*ptr_head_complains);
-            break;
-      case (14):
-            func_average_delai_time(*ptr_head_complains);
-            break;
-
-      case (15):
-            func_rate_of_resolved_complains(*ptr_head_complains);
-            break;
-    case (16):
-            func_generate_raport_file(*ptr_head_complains);
-            break;
-    case (17):
-            //log out
-            break;
-
-        default:
-            printf("\t\tPlease enter a valid option number.\n\n\n\n");        
+    for(int i=0;i<R_Taille;i++){
+        for(int j=i+1;j<R_Taille;j++){
+            if(rec[i].priorite < rec[j].priorite){
+                reclamation = rec[i];
+                rec[i] = rec[j];
+                rec[j] = reclamation;
             }
-    }
-}
-
-void func_add_complains_client(complains **p, int id_box) {
-
-
-    //char moti[100]; no need for now
-    time_t now;
-
-    // Memory allocation for the new node/complain.
-    complains *ptr = (complains *)malloc(sizeof(complains));
-
-    if (!ptr) {
-        printf("Memory allocation for the new node has failed!");// Handle in the callign func
-        return;
-    }
-
-    // <<<<<<<<<<<<<<<<<node elements initialization by default>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-     // Seed the random number generator with the current time
-    srand(time(0));
-
-    // Generate a random ID between 1000 and 99999 (5-digit ID)
-    int complaintID = rand() % 90000 + 10000;
-
- 
-    ptr->id = complaintID;//*************************************************************** */
-  
-    //printf("\n\n1- ID Please:     %d\n", ptr->id); 
-    
-    strcpy(ptr->status, "waiting");
-    
-    strcpy(ptr->note, "no note for the moment");
-    
-    //printf("\n\n3- NOTE Please:     %s\n",ptr->note); 
-
-    struct tm *local;
-    time(&now); // Get the current time
-    local = localtime(&now); // Convert to local time
-
-    ptr->creation_time = time(NULL);
-
-    //printf("\n\n\n\n\n\n ---------------->  \n\n", ptr->creation_time);
-
-    strftime(ptr->date, sizeof(ptr->date), "%d-%m-%Y %H:%M:%S", local);
-
-    //printf("\n\n4- DATE: Please:     %s\n", ptr->date); 
-
-    printf("\n\n\tPlease enter the complain motive:   ");
-    scanf(" %[^\n]s", ptr->motive);// maby produce qn error
-    getchar();
-    printf("\n");
-    //printf("\n\n5- MOTIVEP lease:     %s\n",ptr->motive); 
-
-    printf("\n\n\tPlease enter the complain category:   ");
-    scanf("%[^\n]s", ptr->category);
-    getchar();
-    printf("\n");
-    
-    //printf("\n\n6- CATEGORY Please:     %s\n",ptr->category); 
-
-    ptr->id_usr = id_box;
-
-    //printf("\n\n7- id user Please:     %d\n", ptr->id_usr ); 
-    //printf("\n");
-
-    // add the description 
-    
-    printf("\n\n\tPlease enter the complain description:   ");
-    scanf("%[^\n]s", ptr->description);
-    getchar();
-    
-    
-    //printf("\n\n8- description  Please:     %s\n",ptr->description);
-
-    ptr->next = NULL;
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<, ask thye user to enter data
-
-
-    if (*p != NULL) {
-        complains *t; // a pointer to traverse the linked list. in case there are more than one node in the list
-        t = *p;
-        while (t->next != NULL) {
-            t = t->next;
         }
-        t->next = ptr;
-
-    } else {// In case there is no node in the list 
-        *p = ptr;
     }
-}
 
+    for(int i=0;i<R_Taille;i++){
 
-void func_display_complains_client(complains *ptr, int id) {// I have to make the output more cleaner.
-
-    //complains *p;
-
-
-    printf("\n\t\tAll complains are list bellow\n\n");
-    while (ptr != NULL) {
-        if (ptr->id_usr == id) {
-        printf("\t\t\tDate          ->   %s\n", ptr->date);
-        printf("\n\t\t\tUser ID     ->   %d\n", ptr->id_usr);
-        printf("\n\t\t\tComplain ID ->   %d\n", ptr->id);
-        printf("\t\t\tMotive        ->   %s\n", ptr->note);
-        printf("\n\t\t\tDescription ->   %s\n", ptr->description);
-
-        if (ptr->status == 0) {
-                printf("\n\t\t\tPriority        ->   High\n");
-                } else if (*ptr->status == 1) { /*
-                /tmp/J3hiSXCGQj.c:387:33: warning: comparison between pointer and integer
-    387 |             else if (pt->status == 1) printf("\n\t\t\tPriority    ->   Medium\n");
-    |   
-                */
-                    printf("\n\t\t\tPriority    ->   Medium\n");
-                } else {
-                    printf("\n\t\t\tPriority    ->   Low\n");
-            }
-            printf("\t\t\tStatus        ->   %s\n", ptr->status);
-            printf("\t\t\tCategory      ->   %s\n", ptr->category);
-            printf("\t\t\tNote          ->   %s\n", ptr->note);
-            printf("\n\n\n");
-            //return;
-        }
-        ptr = ptr->next;
-    }
-}
-
-void func_modify_complains_client(complains *pt) {
-    // print enter compla id 
-    int i;
-    int found;
-    printf("\n\n\t\tPlease Enter a complain id: ");
-    scanf("%d", &i);
-    getchar();
-    printf("\n\n");
-    found = 0;
-
-    while (pt) {
-        if (pt->id == i) {
-            if ((difftime(pt->modification_time, pt->creation_time) < 86400) ) {
+            printf("\n\t\t\t\t\t\t  \x1b[32m------ Reclamation %d ------\x1b[0m\n\n" , i+1);
+            printf("\t\t\t\t\t\t  -- iD          : %d\n" , rec[i].id);
+            printf("\t\t\t\t\t\t  -- Client      : %s\n" , user[rec[i].id_client].Nom);
+            printf("\t\t\t\t\t\t  -- Motif       : %s\n" , rec[i].Motif);
+            printf("\t\t\t\t\t\t  -- Catgorie    : %s\n" , rec[i].Categorie);
+            printf("\t\t\t\t\t\t  -- Status      : %s\n" , rec[i].Status);
+            printf("\t\t\t\t\t\t  -- Description : %s\n" , rec[i].Description);
+            if(rec[i].priorite == 2)printf("\t\t\t\t\t\t  -- priorite    : Haute\n");
+            else if(rec[i].priorite == 1)printf("\t\t\t\t\t\t  -- priorite    : Moyenne\n");
+            else if(rec[i].priorite == 0) printf("\t\t\t\t\t\t  -- priorite    : Basse\n");
+            printf("\t\t\t\t\t\t  -- Note        : %s\n" , rec[i].Note);
+            printf("\t\t\t\t\t\t  -- Date        : %s\n" , rec[i].date);
+            if(user[rec[i].id_client].Role == 1) printf("\t\t\t\t\t\t  -- Role        : Administrateur\n");
+            else if(user[rec[i].id_client].Role == 2) printf("\t\t\t\t\t\t  -- Role        : Agent de Reclamation\n");
+            else if(user[rec[i].id_client].Role == 0) printf("\t\t\t\t\t\t  -- Role        : Client\n");
             
-            // print the original
-            printf("\t\t\tDate          ->   %s\n", pt->date);
-            printf("\n\t\t\tUser ID     ->   %d\n", pt->id_usr);
-            printf("\n\t\t\tComplain ID ->   %d\n", pt->id);
-            printf("\n\t\t\tMotive      ->   %s\n", pt->note);
-            printf("\n\t\t\tDescription ->   %s\n", pt->description);
-            if (pt->status == 0) printf("\n\t\t\tPriority       ->   High\n");
-            else if (*pt->status == 1) printf("\n\t\t\tPriority ->   Medium\n");
-            else {
-                printf("\n\t\t\tPriority       ->   Low\n");
-                }
-            printf("\n\t\t\tStatus        ->   %s\n", pt->status);
-            printf("\n\t\t\tCategory      ->   %s\n", pt->category);
-            printf("\n\t\t\tNote          ->   %s\n", pt->note);
-            printf("\n\n\n\n");
+    }
 
-            // Now ask for the  output
+}
 
-            printf("\t\tPlease Enter a  Motive: ");
-            scanf("%[^\n]", pt->motive);
-            getchar();
-            printf("\n");
-            printf("\n\t\tPlease Enter a  Description: : ");
-            scanf("%[^\n]", pt->description);
-            getchar();
-            printf("\n");
-            printf("\n\t\tPlease Enter a  category: ");
-            scanf("%[^\n]", pt->category);
-            getchar();
-            printf("\n\n\n\n");
-   /*         printf("\n\t\tPlease Enter a  status: ");
-            scanf("%[^\n]", pt->status);
-            getchar();
-            printf("\n");*/
-            found = 1;
+void Afficher_Reclamation(){
+
+    if(rec == NULL || R_Taille  == 0 ){
+        printf("\n\t\t\t\t\t\t  \x1b[31m---- Aucun Reclamation a Afficher ----\x1b[0m\n");
+        return; 
+    }
+
+    int i , exist = 0 , index = 1;
+    for(int i=0;i<R_Taille;i++){
+        if(rec[i].id_client == index_user){
+            printf("\n\t\t\t\t\t\t  \x1b[32m------ Reclamation %d ------\x1b[0m\n\n" , index);
+            printf("\t\t\t\t\t\t  -- iD          : %d\n" , rec[i].id);
+            printf("\t\t\t\t\t\t  -- Motif       : %s\n" , rec[i].Motif);
+            printf("\t\t\t\t\t\t  -- Catgorie    : %s\n" , rec[i].Categorie);
+            printf("\t\t\t\t\t\t  -- Status      : %s\n" , rec[i].Status);
+            printf("\t\t\t\t\t\t  -- Description : %s\n" , rec[i].Description);
+            printf("\t\t\t\t\t\t  -- Note        : %s\n" , rec[i].Note);
+            printf("\t\t\t\t\t\t  -- Date        : %s\n" , rec[i].date);
+            exist = 1;
+            index += 1;
+        }
+    }
+
+    if(exist == 0) printf("\n\t\t\t\t\t\t  \x1b[31m---- Aucun Reclamation a Afficher ----\x1b[0m\n");
+    
+}
+
+void Afficher_une_Reclamation(Reclamation r , int i){
+
+    printf("\n\t\t\t\t\t\t  \x1b[32m------ Reclamation %d ------\x1b[0m\n\n" , i);
+    printf("\t\t\t\t\t\t  -- iD          : %d\n" , r.id);
+    printf("\t\t\t\t\t\t  -- Client      : %s\n" , user[r.id_client].Nom);
+    printf("\t\t\t\t\t\t  -- Motif       : %s\n" , r.Motif);
+    printf("\t\t\t\t\t\t  -- Catgorie    : %s\n" , r.Categorie);
+    printf("\t\t\t\t\t\t  -- Status      : %s\n" , r.Status);
+    printf("\t\t\t\t\t\t  -- Description : %s\n" , r.Description);
+    printf("\t\t\t\t\t\t  -- Note        : %s\n" , r.Note);
+    printf("\t\t\t\t\t\t  -- Date        : %s\n" , r.date);
+}
+
+int Ajouter_un_Reclamation(){
+
+    int i;
+    rec = realloc(rec , (R_Taille + 1)*sizeof(Reclamation));
+
+    if(rec == NULL){
+        printf("\n\t\t\t\t\t\t  \x1b[31m--- Erreur D'allocation ----\x1b[0m\n");
+        return 0;
+    }
+    
+    printf("\n\t\t\t\t\t\t  \x1b[32m---- Ajouter un Reclamation ----\x1b[0m \n");
+ 
+    // generer L'id ----------- 
+    srand(time(0));
+    while(1){
+        int existe = 1;
+        int random_number = 1000000 + rand() % 9000000;
+        for(int i=0;i<R_Taille;i++){
+            if(rec[i].id == random_number){
+                existe = 0;
+            }
+        }
+
+        if(existe) {
+            rec[R_Taille].id = random_number;
             break;
-        } else {
-            printf("\n\n\tYou can't modify the complain\n\n\n\n");
+        }
+    }
+    
+    // Validation de motif -------
+    int Motif_count = 0;
+    while(1){
+        printf("\n\t\t\t\t\t\t  -- Le Motif de la Reclamation : ");
+        int valide_input = scanf(" %[^\n]s" , rec[R_Taille].Motif);
+
+        if(valide_input && strlen(rec[R_Taille].Motif) > 3){
+            break;
+        }else if(Motif_count > 2){
+            return 0;
+        }else{
+            Motif_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Motif --\x1b[0m \n");
+        }
+    }
+
+    // Validation de description -------
+    int Description_count = 0;
+    while(1){
+        printf("\n\t\t\t\t\t\t  -- La Description de la Reclamation : ");
+        int valide_input = scanf(" %[^\n]s" , rec[R_Taille].Description);
+
+        if(valide_input && strlen(rec[R_Taille].Description) > 3){
+            break;
+        }else if(Description_count > 2){
+            return 0;
+        }else{
+            Description_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Description --\x1b[0m \n");
+        }
+    }
+
+    // priorite  -------- 
+    rec[R_Taille].priorite = 0;
+    for(int i=0; i<8; i++) {
+        if(strstr(rec[R_Taille].Description, priorite_haute[i]) != NULL) {
+            rec[R_Taille].priorite = 2;
+            break;
+        } else if(strstr(rec[R_Taille].Description, priorite_moyenne[i]) != NULL) {
+            rec[R_Taille].priorite = 1;
+            break;
+        }
+    }   
+
+    // Validation de Categorie -------
+    int Categorie_count = 0;
+    while(1){
+        printf("\n\t\t\t\t\t\t  -- La Categorie de la Reclamation : ");
+        int valide_input = scanf(" %[^\n]s" , rec[R_Taille].Categorie);
+
+        if(valide_input && strlen(rec[R_Taille].Categorie) > 3){
+            break;
+        }else if(Categorie_count > 2){
+            return 0;
+        }else{
+            Categorie_count++;
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Categorie --\x1b[0m \n");
+        }
+    }
+
+    // Validation de Status -------
+    strcpy(rec[R_Taille].Status , "en attente");
+    strcpy(rec[R_Taille].Note,"");
+
+    // Validation de La Date
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    // La date de creation
+    strftime(rec[R_Taille].date, 100 , "%d-%m-%Y %H", &tm);
+    rec[R_Taille].heure_de_debut = time(NULL);
+    
+    rec[R_Taille].differance = 0;
+
+    // id_clien
+    rec[R_Taille].id_client = index_user; 
+
+    return 1;
+}
+
+int Modifier_un_Reclamation(){
+
+    // virifier l'dentification existe ou non
+    int mod_count = 0 , pos;
+   
+    while(1){
+        int id;
+        bool exist = false;
+        printf("\n\t\t\t\t\t\t  -- Veuillez Saisir Le identification de Reclamation : ");
+        scanf("%d" , &id);
+        while(getchar() != '\n');
+
+        for(int i=0;i<R_Taille;i++){
+            if(rec[i].id == id){
+                exist = true;
+                pos = i;
+                break;
+            }  
+        }
+
+        if(exist){
+            break;
+        }else if( mod_count > 2 ) {
+            return 0;
+        }else if (exist == false) {
+            printf("\n\t\t\t\t\t\t  \x1b[33m--- Reclamation avec cette identification n'est pas exist ----\x1b[0m \n");
+            mod_count++;
+        }else{
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Id --\x1b[0m \n");
+            mod_count++;
+        }
+    }
+
+
+    if (verifier_duree(rec[pos].heure_de_debut) && user[index_user].Role == 0){
+
+        printf("\n\t\t\t\t\t\t  \x1b[33m !! Le Delai Pour La Modification Est Expire !! \x1b[0m\n");
+        return 0;
+    }else{
+
+        printf("\n\t\t\t\t\t\t  \x1b[32m---- Modifier un Reclamation ----\x1b[0m\n");
+
+
+        // Validation de motif -------
+        int Motif_count = 0;
+        while(1){
+            printf("\n\t\t\t\t\t\t  -- Le Motif de la Reclamation : ");
+            int valide_input = scanf(" %[^\n]s" , rec[pos].Motif);
+
+            if(valide_input && strlen(rec[pos].Motif) > 3){
+                break;
+            }else if(Motif_count > 2){
+                return 0;
+            }else{
+                Motif_count++;
+                printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Motif --\x1b[0m \n");
+            }
+        }
+
+        // Validation de description -------
+        int Description_count = 0;
+        while(1){
+            printf("\n\t\t\t\t\t\t  -- La Description de la Reclamation : ");
+            int valide_input = scanf(" %[^\n]s" , rec[pos].Description);
+
+            if(valide_input && strlen(rec[pos].Description) > 3){
+                break;
+            }else if(Description_count > 2){
+                return 0;
+            }else{
+                Description_count++;
+                printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Description --\x1b[0m \n");
+            }
+        }
+
+
+        // priorite  -------- 
+        rec[pos].priorite = 0;
+        for(int i=0; i<8; i++) {
+            if(strstr(rec[pos].Description, priorite_haute[i]) != NULL) {
+                rec[pos].priorite = 2;
+                break;
+            } else if(strstr(rec[pos].Description, priorite_moyenne[i]) != NULL) {
+                rec[pos].priorite = 1;
+                break;
+            }
+        }  
+
+        // Validation de Categorie -------
+        int Categorie_count = 0;
+        while(1){
+                printf("\n\t\t\t\t\t\t  -- La Categorie de la Reclamation : ");
+                int valide_input = scanf(" %[^\n]s" , rec[pos].Categorie);
+
+                if(valide_input && strlen(rec[pos].Categorie) > 3){
+                    break;
+                }else if(Categorie_count > 2){
+                    return 0;
+                }else{
+                    Categorie_count++;
+                    printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Categorie --\x1b[0m \n");
+                }
+            }
+
+        return 1;
+    }
+
+}
+
+int Supprimer_un_Reclamation(){
+
+    // virifier l'dentification existe ou non
+    int sup_coount = 0 , pos;
+   
+    while(1){
+        int id;
+        bool exist = false;
+        printf("\n\t\t\t\t\t\t  -- Veuillez Saisir Le identification de Reclamation : ");
+        scanf("%d" , &id);
+        while(getchar() != '\n');
+
+        for(int i=0;i<R_Taille;i++){
+            if(rec[i].id == id){
+                exist = true;
+                pos = i;
+                break;
+            }  
+        }
+
+        if(exist){
+            break;
+        }else if( sup_coount > 2 ) {
+            return 0;
+        }else if (exist == false) {
+            printf("\n\t\t\t\t\t\t  \x1b[33m--- Reclamation avec cette identification n'est pas exist ----\x1b[0m \n");
+            sup_coount++;
+        }else{
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Id --\x1b[0m \n");
+            sup_coount++;
+        }
+    }
+
+    if(R_Taille == 0){
+        return 2;
+    }
+
+    if (verifier_duree(rec[pos].heure_de_debut) && user[index_user].Role == 0){
+
+        printf("\n\t\t\t\t\t\t  \x1b[33m !! Le Delai Pour La Suppression est Expire !! \x1b[0m\n");
+        return 0;
+    }else{
+
+        for(int i=pos;i<R_Taille - 1;i++){
+            rec[i] = rec[i+1];
+        }
+        R_Taille--;
+        return 1;
+    }
+    
+
+}
+
+// Utilisateur ------------------------------------------------------------------------
+
+int Modifier_Role_Utilisateur(){
+
+    // virifier l'dentification existe ou non
+    int nom_count = 0 , pos; 
+   
+    while(1){
+
+        char Nom[20];
+        bool exist = false;
+        printf("\n\t\t\t\t\t\t  -- Veuillez Saisir Le Nom D'utilisateur : ");
+        scanf(" %[^\n]s" , Nom);
+        while(getchar() != '\n');
+
+        for(int i=0;i<Taille;i++){
+            if(strcmp(user[i].Nom , Nom) == 0){
+                exist = true;
+                pos = i;
+                break;
+            }  
+        }
+
+        if(exist){
+            break;
+        }else if( nom_count > 2 ) {
+            return 0;
+        }else if (exist == false) {
+            printf("\n\t\t\t\t\t\t  \x1b[33m--- Utilisateur avec ce nom n'est pas exist ----\x1b[0m \n");
+            nom_count++;
+        }else{
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Id --\x1b[0m \n");
+            nom_count++;
+        }
+    }
+
+
+    int role;
+    printf("\n\t\t\t\t\t\t  ---- Role d'Utilisateur ----\n");
+    printf("\t\t\t\t\t\t  -- 1. Administrateur.\n");
+    printf("\t\t\t\t\t\t  -- 2. Agent de Reclamation.\n");
+    printf("\t\t\t\t\t\t  -- 3. Client.\n");
+    printf("\t\t\t\t\t\t  - Tapez Votre Choix : ");
+    scanf("%d" , &role);
+
+    if(role >=1 && role <= 3){
+        user[pos].Role = role;
+        return 1;
+    }else{
+        return 0;
+    }
+
+}
+
+int Modifier_Status_Utilisateur(){
+
+    // virifier l'dentification existe ou non
+    int id_count = 0 , pos; 
+   
+    while(1){
+
+        int id;
+        bool exist = false;
+        printf("\n\t\t\t\t\t\t  -- Veuillez Saisir L'dentification de Reclamation : ");
+        scanf("%d" , &id);
+        while(getchar() != '\n');
+
+        for(int i=0;i<R_Taille;i++){
+            if(rec[i].id == id){
+                exist = true;
+                pos = i;
+                break;
+            }  
+        }
+
+        if(exist){
+            break;
+        }else if( id_count > 2 ) {
+            return 0;
+        }else if (exist == false) {
+            printf("\n\t\t\t\t\t\t  \x1b[33m--- Utilisateur avec ce nom n'est pas exist ----\x1b[0m \n");
+            id_count++;
+        }else{
+            printf("\n\t\t\t\t\t\t  \x1b[31m-- Invalid Id --\x1b[0m \n");
+            id_count++;
+        }
+    }
+
+    int status;
+    printf("\n\t\t\t\t\t\t  ---- Status de Reclamation ----\n");
+    printf("\t\t\t\t\t\t  -- 1. en cours.\n");
+    printf("\t\t\t\t\t\t  -- 2. Resolu.\n");
+    printf("\t\t\t\t\t\t  -- 3. Rejeter.\n");
+    printf("\t\t\t\t\t\t  - Tapez Votre Choix : ");
+    scanf("%d" , &status);
+
+    if(status >= 1 && status <= 3){
+
+
+        if(status == 1) strcpy(rec[pos].Status , "en cours");
+        else if(status == 2) {
+            strcpy(rec[pos].Status , "Resolu");
+
+            time_t heure_actuelle = time(NULL);
+            double difference = difftime(heure_actuelle, rec[pos].heure_de_debut);
+
+            rec[pos].differance = difference;
+
+        }  
+        else if ( status == 3) strcpy(rec[pos].Status , "Rejeter");
+
+        char note[MAX_CHARACTERE];
+        int  option = 0;
+        printf("\n\t\t\t\t\t\t  -- voulez-vous Ajouter une Note : \n");
+        printf("\t\t\t\t\t\t  -- 1. Oui.\n");
+        printf("\t\t\t\t\t\t  -- 2. Non.\n");
+        printf("\t\t\t\t\t\t  -- Taper Votre Choix : ");
+        scanf("%d" , &option);
+
+        if(option == 1){
+            printf("\n\t\t\t\t\t\t  -- Saisir La Note : ");
+            scanf(" %[^\n]s" , note);
+            strcpy(rec[pos].Note , note);
+        }
+
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+// virification de modification ------------------------------------------------------------------------
+
+int verifier_duree(time_t heure_de_debut) {
+
+    time_t heure_actuelle = time(NULL);
+    double difference = difftime(heure_actuelle, heure_de_debut);
+    
+    // 24 heures => 86400 secondes
+    return difference >= 30;
+
+}
+
+// Recherche ------------------------------------------------------------------------
+
+void Rechercher_Reclamation(){
+
+    int chx , i , id , exist = 1;
+    char Nom[20] , Status[20];
+
+
+    // Trouve L'dentification
+    while(1){
+
+        printf("\n\t\t\t\t\t\t  ----- Rechercher -------- \n");
+        printf("\t\t\t\t\t\t  1 - par identifiant.\n"); 
+        printf("\t\t\t\t\t\t  2 - par Nom du Client\n"); 
+        printf("\t\t\t\t\t\t  3 - par Status\n"); 
+        printf("\t\t\t\t\t\t  0 - Menu Priincipale.\n"); 
+        printf("\t\t\t\t\t\t  => ");
+
+        int valid_choix = scanf("%d" , &chx);
+        while(getchar() != '\n');
+
+            if (valid_choix != 1) {
+                printf("\n\t\t\t\t\t\t \033[31m ------ Choix Invalide ------ \033[0m\n");
+                continue;
+            }else{
+                break;
+            }
+    }
+
+    // Rechercher par identifiant
+    if(chx == 1){
+
+        int id;
+        printf("\n\t\t\t\t\t\t  Saisie L'dentifiant de Reclamation: ");
+        scanf("%d" , &id);
+
+        for(i=0;i<R_Taille;i++){
+            if(rec[i].id==id){
+                Afficher_une_Reclamation(rec[i] , i+1);
+                exist = 0;
+                break;
+            }
+        }
+
+        if(exist) printf("\n\t\t\t\t\t\t  \033[31m --- L'identifiant n'est pas exist ----- \033[0m\n");
+
+    // Rechercher par nom du client
+    }else if(chx == 2){
+
+        printf("\n\t\t\t\t\t\t  Saisie Le Nom du Client : ");
+        scanf(" %[^\n]s" , Nom);
+
+        for(i=0;i<Taille;i++){
+            if(strcmp(user[i].Nom , Nom) == 0){
+                    for(int j=0;j<R_Taille;j++){
+                        if(i == rec[j].id_client){
+                        Afficher_une_Reclamation(rec[j] , j+1);
+                    }
+                }
+                exist = 0;
+                
+            }
+        }
+
+        if(exist) {
+            printf("\n\t\t\t\t\t\t  \033[31m --- Le Nom du Client n'est pas exist -----\033[0m\n");
             return;
         }
-       // pt = pt->next;
-}
-        pt = pt->next;
+
+    // Rechercher par status
+    }else if(chx == 3){
+
+        int status , existe = 1;
+        printf("\n\t\t\t\t\t\t  ---- Status de Reclamation ----\n");
+        printf("\t\t\t\t\t\t  -- 1. en cours.\n");
+        printf("\t\t\t\t\t\t  -- 2. Resolu.\n");
+        printf("\t\t\t\t\t\t  -- 3. Rejeter.\n");
+        printf("\t\t\t\t\t\t  - Tapez Votre Choix : ");
+        scanf("%d" , &status);
+
+
+        if(status == 1){
+            for(i=0;i<R_Taille;i++){
+                if(strcmp(rec[i].Status,"en cours") == 0){
+                    Afficher_une_Reclamation(rec[i] , i+1);
+                    existe = 0;
+                }
+            }
+
+            if(existe) printf("\n\t\t\t\t\t\t \033[31m !! Aucun Reclamation 'en cours' a afficher !! \033[0m\n");
+
+        } 
+        else if (status == 2){
+            for(i=0;i<R_Taille;i++){
+            if(strcmp(rec[i].Status,"Resolu") == 0){
+                Afficher_une_Reclamation(rec[i] , i+1);
+                existe = 0;
+                }
+            }
+
+            if(existe) printf("\n\t\t\t\t\t\t \033[31m !! Aucun Reclamation 'Resolu' a afficher !! \033[0m\n");
+        }
+        else if ( status == 3){
+            for(i=0;i<R_Taille;i++){
+            if(strcmp(rec[i].Status,"Rejeter") == 0){
+                Afficher_une_Reclamation(rec[i] , i+1);
+                    existe = 0;
+                }
+            }
+            if(existe) printf("\n\t\t\t\t\t\t \033[31m !! Aucun Reclamation 'Rejeter' a afficher !! \033[0m\n");
+        }else{
+            printf("\n\t\t\t\t\t\t \033[31m ------ Choix Invalide ------ \033[0m\n");
+            return;
+        }
+
+    }else if(chx == 0){
+        return; 
+    }else {
+        printf("\n\t\t\t\t\t\t \033[31m ------ Choix Invalide ------ \033[0m\n");
+        return;
     }
 
-    if (!found) {
-        printf("\n\n\t\tComplain is not found\n\n\n\n");
-    }
-    // check if it exixt
-        // if exists 
-            // afiicher 
-            // print enter motiv, des, cate
-            // print all good
-        // if not 
-            //print makaynash
-            // go back
-
-
 }
 
+void Statistiques_Rapport(){
 
-
-void func_delete_complains_client(complains **head) {
+    int nombre_total = R_Taille;
+    int nombre_total_aujourdui = 0;
+    int total_resolu = 0;
+    int total_resolu_aujourdoui = 0;
+    int differance_total = 0;
+    int taux_resolution = 0, moyenne_traitement = 0;
+    time_t date = time(NULL);
+    int i;
     
 
-    // How to delete
-    complains* current = *head;
-    complains* previous = *head;
-    complains* tmp = *head;
-    int id;
-    int position = 0;
-    int f = 0;
+    if (nombre_total > 0) {
 
-    printf("\n\tPlease Enter a complain id: ");
-    scanf("%d", &id);
-    getchar();
-
-    while (tmp) {
-        position++;
-        if (tmp->id == id) {
-            f = 1;
-            break;
+        // Totaaal Reclamation
+        for (i = 0; i < nombre_total; i++) {
+          
+            if (rec[i].Status != NULL && strcmp(rec[i].Status, "Resolu") == 0) {
+                total_resolu++;
+                if (rec[i].differance > 0) {
+                    differance_total += rec[i].differance;
+                }
             }
-        tmp = tmp->next;
-    }
-    if (f == 0) {
-         printf("\n\tThere are no complains with that id!\n\n\n\n");
-         return;
-    }
-
-    if (*head == NULL) {
-        printf("\n\tThere are no complains yet!\n\n\n\n");
-        return;
-    } else if (position == 1 ) {
-        *head = current->next;
-        free(current);
-        current = NULL;
-        return;
-    } else {
-        while (position != 1) {
-            previous = current;
-            current = current->next;
-            position--;
         }
 
-        previous->next = current->next;
-        free(current);
-        current = NULL;
-        
-    }
-        
-}
+        // Totaaal Reclamation d'aujourdoui
+        for (i = 0; i < nombre_total; i++) {
+            
+            struct tm *tm1 = localtime(&date);
+            struct tm *tm2 = localtime(&rec[i].heure_de_debut);
 
-void func_client_menu(users **ptr_head, complains **ptr_head_complains, int id_box) {
-
-    int opt;
-    opt = 0;
-    time_t now;
-
-    while (1) {
-    printf("\n\n\n\n\t\t\tWelcome back client!\n\n\n");
-    printf("\tPlease Enter a valid number option from the list bellow:\n");
-    printf("\t\t1  -> add complains.\n");
-    printf("\t\t2  -> Display complains list.\n");
-    printf("\t\t3  -> Modify a complain.\n");
-    printf("\t\t4  -> Delete a complain.\n");
-    printf("\t\t5  -> Log out\n\n");
-    printf("\t\tEnter your option here:     ");
-    scanf("%d", &opt);
-    getchar();
-    if (opt == 5) {
-        printf("\n\n\n\n");
-        return;
-    }
-
-    switch (opt) {
-        case (1):
-            func_add_complains_client(ptr_head_complains, id_box);
-            break;
-       case (2):
-            func_display_complains_client(*ptr_head_complains, id_box);
-            break;
-        case (3):
-            (*ptr_head_complains)->modification_time = time(NULL);
-            func_modify_complains_client(*ptr_head_complains);//motive+des+cat
-            break;
-        case (4):
-            func_delete_complains_client(ptr_head_complains);
-            break;
-        default:
-            printf("\t\tPlease enter a valid option number.\n\n");        
+            if (tm1->tm_year == tm2->tm_year &&
+                tm1->tm_mon == tm2->tm_mon &&
+                tm1->tm_mday == tm2->tm_mday) {
+                nombre_total_aujourdui++;
+            if (rec[i].Status != NULL && strcmp(rec[i].Status, "Resolu") == 0) {
+                  total_resolu_aujourdoui++;
+                }
+            }
         }
-    }
-}
 
+        if (total_resolu > 0) { 
+            taux_resolution = (total_resolu * 100) / nombre_total;
+            moyenne_traitement = differance_total / total_resolu;
+        } else {
+            taux_resolution = 0;
+            moyenne_traitement = 0; 
+        }
 
-void func_del_usrs(users * curr) {
-
-    // Base case: If the list is empty, return
-    if (curr == NULL) {
-        return;
-    }
-
-    // Recursively delete the next node
-    func_del_usrs(curr->next);
-
-    // Delete the current node
-    free(curr);
-}
-
-void func_del_comp(complains* curr) {
-
-    // Base case: If the list is empty, return
-    if (curr == NULL) {
-        return;
+        // Conversion optionnelle du temps (commentée) :
+        // int jours = moyenne_traitement / 86400; 
+        // int heures = (moyenne_traitement % 86400) / 3600;  
     }
 
-    // Recursively delete the next node
-    func_del_comp(curr->next);
 
-    // Delete the current node
-    free(curr);
-}
-
-int main() {
-
-    int option;
-    int id_found;
-    int id_box;
-    char pass_box[20];
-    char role_box[10];
-    int pass_valid;    
-    int num_of_attempts;
-    int is_first_node;
-    int var_role;
-    users *ptr_head; // the head of the linked list
-    complains *ptr_head_complains;
-
-
-    // initializing variables
-    option = 0;
-    id_found = 0;
-    id_box = 0;
-    pass_valid = 0;
-    pass_box[0] = '\0';
-    role_box[0] = '\0';
-    num_of_attempts = 3;
-    ptr_head = NULL;// y we have to set it to NULL??--------------------------------------------
-    ptr_head_complains = NULL;
-    is_first_node = 0;
-    var_role = 0;
+    printf("\t\t\t\t\t+-----------------------------------------------------------------------------------------------+\n");
+    printf("\t\t\t\t\t|                                      STATISTIQUES                                             |\n");
+    printf("\t\t\t\t\t+-----------------------------------------------------------------------------------------------+\n");
+    printf("\t\t\t\t\t| \x1b[37mTOTAL DE RECLAMATIONS        |   RESOLUTION DES RECLAMATIONS |  DELAI MOYEN DE TRAITEMENT\x1b[0m     |\n");
+    printf("\t\t\t\t\t+------------------------------+-------------------------------+--------------------------------+\n");
+    printf("\t\t\t\t\t|           \x1b[37m%d                  |               %d%            |          %d seconde \x1b[0m           |\n", nombre_total, taux_resolution, moyenne_traitement); 
+    printf("\t\t\t\t\t+------------------------------+-------------------------------+--------------------------------+\n");
 
 
 
-    // creating our first user the admin
-    func_assign_val_to_nodes(&ptr_head, 0, "admin", "admin");
-    if (!ptr_head) return -1;
+    char file_name[20] = "Rapport.txt";
+    FILE *file = fopen(file_name, "w");
 
-
-    main_menu:
-        // The first menu display
-        printf("\tPlease Enter a valid number option from the list bellow:\n\n");
-        printf("\t\t1-> Sign up.\n");
-        printf("\t\t2-> Sign in.\n");
-        printf("\t\t3-> Exit.\n\n");
-        printf("\t\tEnter your option here: ");
-
-        // Take the input from the user
-        scanf("%d", &option);
-
-        /*
-            why the getchar after thr scanf?
-            scanf and getchar can be tricky to mix. scanf leaves the newline character in the input after reading an integer. 
-            A following getchar will read that newline character.There's a few ways around this. One way is to use fgets and sscanf 
-            instead of scanf to read in an entire line. Another way is to clear the input buffer after scanf.
-        */
-
-        printf("\n\n\n\n\n\n");
-        goto sw;
-
-sw: 
-    switch (option) {
-        case (1):
-            // we create the first node for the admin
-            //func_create_node_only(&ptr_head);
-
-            //func_assign_val_to_nodes(&ptr_head, 0, "admin", "admin");
-
-            do {
-                printf("\t\tPlease enter a number id: ");
-                scanf("%d", &id_box);
-                getchar();
-                printf("\n\n\n");
-                id_found = func_id_check(ptr_head, id_box);
-                if (id_found == 1)  printf("\t\tId is already taken Please try again!\n\n");
-            } while (id_found == 1);
-
-            // capturing the password.
-            do {
-                printf("\t\tPlease enter a valid password:  ");
-                scanf("%[^\n]", pass_box);//s specifier removed
-                getchar();
-                printf("\n\n\n");
-                pass_valid = func_pass_check(pass_box);
-                if (pass_valid == -1) printf("\t\tThe Password is weak Please try again!\n\n");
-            } while (pass_valid == -1);
-
-            // Code segment to define the user role.
-            //is_first_node = func_is_first_node(ptr_head); // or ptr_head == NULL
-            // if (is_first_node == 1) {// we are at the first node so we are  going to be the admin
-            //     strcpy(role_box, "admin");
-            // } else {
-            //     strcpy(role_box, "client");
-            // }
-            
-            // we create another node for other users
-            // func_create_node_only(&ptr_head);
-            // if (!ptr_head) return -1;
-            // func_assign_val_to_nodes(&ptr_head, id_box, pass_box, "client");
-            
-            func_assign_val_to_nodes(&ptr_head, id_box, pass_box, "client");
-            if (!ptr_head) return -1;
+    if (file != NULL)
+    {
         
-            printf("\t\tYour account has been succefully created");
-            printf("\n\n\n\n");
+        fprintf(file, "\n"
 
-            goto main_menu;/****************************************************** */
+                "============================================================\n"
+                "|                   GESTION DES RECLAMATIONS               |\n"
+                "============================================================\n"
+                "| Ce rapport fournit un suivi des reclamations soumises    |\n"
+                "| par nos clients, ainsi que l'etat de leur resolution.    |\n"
+                "| Votre efficacite garantit leur satisfaction.             |\n"
+                "============================================================\n"
 
-        case (2):
-
-            do {
-                printf("\t\tPlease enter a number id: ");
-                scanf("%d", &id_box);
-                getchar();
-                printf("\n\n");
-                id_found = func_id_check(ptr_head, id_box);
-
-                printf("\t\tPlease enter a valid password:  ");
-                scanf(" %[^\n]", pass_box);
-                getchar();
-                printf("\n\n");
-                pass_valid = func_pass_check_exist(ptr_head, pass_box);
-                if (id_found == -1 || pass_valid == -1) {
-                    if (num_of_attempts == 0) {
-                        printf("\t\tYou cant log in for %d minute", 1);
-                        printf("\n\n\n\n");
-                        sleep(5);// becarefull where you run the prgram
-                        num_of_attempts = 3;
-                        goto main_menu;// Create it. goto menu; || continue ****************************************
-                    } else {
-                        num_of_attempts--;
-                    }
-                    printf("\t\tUncorrect log in, Please try again\n\n");
-                }
-            } while ((id_found == -1 || pass_valid == -1));// it is or not and operator.
-            //printf("\n\n\n\t\tWelcome back!\n\n\n"); //+++++++++++++++++++++++++++++++++++++++++++++++++
-            var_role = func_role_checker(ptr_head, id_box);
-            switch(var_role) {
-                case(0)://admin
-                    func_admin_menu(&ptr_head, &ptr_head_complains, id_box);
-                    goto main_menu;
-                case(1)://agent
-                    func_agent_menu(&ptr_head, &ptr_head_complains, id_box);
-                    goto main_menu;
-                case(2)://client
-                     func_client_menu(&ptr_head, &ptr_head_complains, id_box);
-                     goto main_menu;
-                }
-        case(3):
-            //func_display_users(ptr_head);
-
-            // free alocated memory!
-            func_del_usrs(ptr_head);
-            func_del_comp(ptr_head_complains);
-
-            //goto main_menu;
-            return 0;
-        default:
-            printf("\t\tPlease enter a valid option number\n\n\n\n");
-            goto main_menu;
+                "============================================================\n"
+                "|                   RAPPORT JOURNALIER                     |\n"
+                "============================================================\n"
+                "------------------------------------------------------------\n"
+                "| TOTAL DE RECLAMATIONS         : %d                        |\n"
+                "| RESOLUTION DES RECLAMATIONS   : %d %                     |\n"
+                "| DELAI MOYEN DE TRAITEMENT     : %d seconde              |\n"
+                "------------------------------------------------------------\n"
+                
+                "============================================================\n"
+                "|                  RECLAMTIONS D'AUJOURDOUI                |\n"
+                "============================================================\n"
+                "------------------------------------------------------------\n"
+                "| RECLAMATIONS D'AUJOURDOUI     : %d                        |\n"
+                "| RECLAMATION RESOLU            : %d                        |\n"
+                "------------------------------------------------------------\n"
+                "|         Fin du rapport journalier d'aujourd'hui          |\n"
+                "============================================================\n"
+                
+                , nombre_total ,taux_resolution ,  moyenne_traitement , 
+                nombre_total_aujourdui ,  total_resolu_aujourdoui);
+        fclose(file);
     }
-     return 0;
+
+
+}
+
+void Recuperation() {
+
+    FILE *users_file = fopen("Users.bin", "rb");
+    FILE *rec_file = fopen("Reclamations.bin", "rb");
+
+    if (users_file == NULL || users_file == NULL) {
+        return;
     }
-//}
+
+    // La Taille d'uetilisateurs
+    fseek(users_file, 0, SEEK_END);
+    long taille_user = ftell(users_file);
+    if (taille_user < 0) {
+        printf(RED "\n\t\t\t\t\t\t  --- Erreur --- \n" RESET);
+        fclose(users_file);
+        return;
+    }
+    rewind(users_file);
+
+    // La Taille de Reclamatino
+    fseek(rec_file, 0, SEEK_END);
+    long taille_rec = ftell(rec_file);
+    if (taille_rec < 0) {
+        perror(RED "\n\t\t\t\t\t\t  --- Erreur " RESET);
+        fclose(rec_file);
+        return;
+    }
+    rewind(rec_file);
+
+    // Calculer le nombre d'utilisateur
+    Taille = taille_user / sizeof(Utilisateurs);
+
+    // Calculer le nombre d'utilisateur
+    R_Taille = taille_rec / sizeof(Reclamation);
+
+    user = (Utilisateurs *)calloc(Taille, sizeof(Utilisateurs));
+    rec = (Reclamation *)calloc(R_Taille, sizeof(Reclamation));
+
+    if (user == NULL || rec == NULL) {
+        perror(RED "\n\t\t\t\t\t\t  --- Erreur " RESET);
+        fclose(users_file);
+        fclose(rec_file);
+    }
+
+    size_t userLus = fread(user, sizeof(Utilisateurs), Taille, users_file);
+    size_t recLus = fread(rec, sizeof(Reclamation), R_Taille, rec_file);
+
+    if (userLus != Taille  || recLus != R_Taille) {
+        perror(RED "\n\t\t\t\t\t\t  --- Erreur " RESET);
+        free(user);
+        free(rec);
+        fclose(users_file);
+        fclose(rec_file);
+    }
+
+
+    fclose(users_file);
+    fclose(rec_file);
+
+    return;
+}
+
+int Enregistrement() {
+
+    FILE *users_file = fopen("Users.bin", "wb");
+    FILE *rec_file = fopen("Reclamations.bin", "wb");
+
+    if (users_file == NULL || rec_file == NULL) {
+        printf("\n\t\t\t\t\t\t \033[31m ---- Erreur a l'ouverture du fichier ---- \033[0m\n");
+        return 1;
+    }
+
+    size_t valid_user = fwrite(user, sizeof(Utilisateurs), Taille, users_file);
+    size_t valid_rec = fwrite(rec, sizeof(Reclamation), R_Taille, rec_file);
+
+    if (valid_user != Taille || valid_rec != R_Taille){
+        printf("\n\t\t\t\t\t\t \033[31m ---- Erreur à l'ecriture dans le fichier ---- \033[0m\n");
+        fclose(users_file);
+        fclose(rec_file);
+        return 1; 
+    }
+
+    if (fclose(users_file) != 0 || fclose(rec_file) != 0) {
+        printf("\n\t\t\t\t\t\t \033[31m ---- Erreur a La Fermeture du fichier ---- \033[0m\n");
+        return 1;
+    }
+
+    return 0;
+    
+}
